@@ -4,7 +4,8 @@ The Tragedy of the Falling Sky
 [View on GitHub pages](http://a-tal.github.io/fallingsky/)
 
 [![Version](https://pypip.in/v/fallingsky/badge.png)](https://pypi.python.org/pypi/fallingsky/)
-[![Download format](https://pypip.in/format/fallingsky/badge.svg)](https://pypi.python.org/pypi/fallingsky/)[![Downloads this month](https://pypip.in/d/fallingsky/badge.png)](https://pypi.python.org/pypi/fallingsky/)
+[![Download format](https://pypip.in/format/fallingsky/badge.svg)](https://pypi.python.org/pypi/fallingsky/)
+[![Downloads this month](https://pypip.in/d/fallingsky/badge.png)](https://pypi.python.org/pypi/fallingsky/)
 [![Supported Python versions](https://pypip.in/py_versions/fallingsky/badge.svg)](https://pypi.python.org/pypi/fallingsky/)
 [![Supported Python implementations](https://pypip.in/implementation/fallingsky/badge.svg)](https://pypi.python.org/pypi/fallingsky/)
 [![Development Status](https://pypip.in/status/fallingsky/badge.svg)](https://pypi.python.org/pypi/fallingsky/)
