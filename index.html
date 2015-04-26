@@ -32,7 +32,9 @@
 <a id="the-tragedy-of-the-falling-sky" class="anchor" href="#the-tragedy-of-the-falling-sky" aria-hidden="true"><span class="octicon octicon-link"></span></a>The Tragedy of the Falling Sky</h1>
 
 <p><a href="https://pypi.python.org/pypi/fallingsky/"><img src="https://img.shields.io/pypi/v/fallingsky.svg" alt="Version"></a>
+<a href="https://travis-ci.org/a-tal/fallingsky"><img src="https://img.shields.io/travis/a-tal/fallingsky.svg" alt="Build Status"></a>
 <a href="https://pypi.python.org/pypi/fallingsky/"><img src="https://img.shields.io/badge/format-wheel-green.svg?" alt="Download format"></a>
+<a href="https://coveralls.io/r/a-tal/fallingsky"><img src="https://img.shields.io/coveralls/a-tal/fallingsky.svg" alt="Test Coverage"></a>
 <a href="https://pypi.python.org/pypi/fallingsky/"><img src="https://img.shields.io/pypi/dm/fallingsky.svg" alt="Downloads this month"></a>
 <a href="https://pypi.python.org/pypi/fallingsky/"><img src="https://img.shields.io/badge/python-2.7,%203.4-blue.svg" alt="Supported Python versions"></a>
 <a href="https://pypi.python.org/pypi/fallingsky/"><img src="https://img.shields.io/badge/implementation-cpython-blue.svg" alt="Supported Python implementations"></a>
@@ -46,17 +48,41 @@
 <h1>
 <a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
 
-<p>First, figure out how to get pygame installed on your platform in whatever interpreter you can. Then clone this repo or install it like a normal python package:</p>
+<h2>
+<a id="pygame" class="anchor" href="#pygame" aria-hidden="true"><span class="octicon octicon-link"></span></a>Pygame</h2>
+
+<p>If you don't have pygame installed yet, you'll need that.</p>
+
+<p>On MacOS, you can do the following:</p>
+
+<div class="highlight highlight-bash"><pre>$ brew install python  <span class="pl-c"># missing brew? go here http://brew.sh/</span>
+$ brew install sdl sdl_image sdl_mixer sdl_ttf smpeg portmidi
+$ <span class="pl-c"># create and/or activate a virtualenv here</span>
+$ pip install hg+http://bitbucket.org/pygame/pygame</pre></div>
+
+<p>On Ubuntu (tested on 15.04 desktop),</p>
+
+<div class="highlight highlight-bash"><pre>$ sudo apt-get install python-pip mercurial
+$ sudo apt-get build-dep pygame
+$ <span class="pl-c"># create and/or activate a virtualenv here</span>
+$ pip install hg+http://bitbucket.org/pygame/pygame</pre></div>
+
+<p>On Windows, install the pygame binaries from <a href="http://pygame.org/download.shtml">pygame.org</a>.</p>
+
+<h2>
+<a id="fallingsky" class="anchor" href="#fallingsky" aria-hidden="true"><span class="octicon octicon-link"></span></a>Fallingsky</h2>
+
+<p>With pygame installed, you can now clone this repo or install it like a normal python package:</p>
 
 <div class="highlight highlight-bash"><pre>$ pip install fallingsky</pre></div>
 
-<p>And if you want to grab the source to hack on it as well:</p>
+<p>If you want to grab the source to hack on it as well:</p>
 
 <div class="highlight highlight-bash"><pre>$ git clone https://github.com/a-tal/fallingsky.git
 $ <span class="pl-c1">cd</span> fallingsky
 $ python setup.py develop</pre></div>
 
-<p>Either way, you should now have a <code>fallingsky</code> executable entry point in your <code>$PATH</code>.</p>
+<p>Either way, you should now have a <code>fallingsky</code> executable in your <code>$PATH</code>.</p>
 
 <h1>
 <a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration</h1>
