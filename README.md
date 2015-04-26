@@ -21,6 +21,12 @@ Installation
 First, figure out how to get pygame installed on your platform in whatever interpreter you can. Then clone this repo and install it like a normal python package:
 
 ```bash
+pip install fallingsky
+```
+
+Or, if you want to grab the source to hack on it as well:
+
+```bash
 $ git clone https://github.com/a-tal/fallingsky.git
 $ cd fallingsky
 $ python setup.py install
