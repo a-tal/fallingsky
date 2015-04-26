@@ -19,13 +19,13 @@ A game of falling blocks with RPG elements, uses pygame. In very early developme
 Installation
 ============
 
-First, figure out how to get pygame installed on your platform in whatever interpreter you can. Then clone this repo and install it like a normal python package:
+First, figure out how to get pygame installed on your platform in whatever interpreter you can. Then clone this repo or install it like a normal python package:
 
 ```bash
 pip install fallingsky
 ```
 
-Or, if you want to grab the source to hack on it as well:
+And if you want to grab the source to hack on it as well:
 
 ```bash
 $ git clone https://github.com/a-tal/fallingsky.git
@@ -33,7 +33,7 @@ $ cd fallingsky
 $ python setup.py install
 ```
 
-You will then have a `fallingsky` executable entry point in your `$PATH`.
+Either way, you should now have a `fallingsky` executable entry point in your `$PATH`.
 
 
 Configuration
