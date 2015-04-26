@@ -11,7 +11,7 @@ The Tragedy of the Falling Sky
 [![Supported Python versions](https://img.shields.io/badge/python-2.7,%203.4-blue.svg)](https://pypi.python.org/pypi/fallingsky/)
 [![Supported Python implementations](https://img.shields.io/badge/implementation-cpython-blue.svg)](https://pypi.python.org/pypi/fallingsky/)
 [![Development Status](https://img.shields.io/badge/status-pre--alpha-red.svg)](https://pypi.python.org/pypi/fallingsky/)
-[![License](https://img.shields.io/github/license/a-tal/fallingsky.svg)](https://pypi.python.org/pypi/fallingsky/)
+[![License](https://img.shields.io/pypi/l/fallingsky.svg)](https://pypi.python.org/pypi/fallingsky/)
 
 A game of falling blocks with RPG elements, uses pygame. In very early development, feel free to help out!
 
