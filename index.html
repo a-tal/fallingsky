@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Fallingsky by a-tal</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/a-tal/fallingsky">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/a-tal/fallingsky/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/a-tal/fallingsky/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Fallingsky</h1>
+          <p>The Tragedy of the Falling Sky</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/a-tal">a-tal</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h1>
+<a id="the-tragedy-of-the-falling-sky" class="anchor" href="#the-tragedy-of-the-falling-sky" aria-hidden="true"><span class="octicon octicon-link"></span></a>The Tragedy of the Falling Sky</h1>
+
+<p><a href="https://pypi.python.org/pypi/fallingsky/"><img src="https://pypip.in/v/fallingsky/badge.png" alt="Version"></a>
+<a href="https://pypi.python.org/pypi/fallingsky/"><img src="https://pypip.in/format/fallingsky/badge.svg" alt="Download format"></a><a href="https://pypi.python.org/pypi/fallingsky/"><img src="https://pypip.in/d/fallingsky/badge.png" alt="Downloads this month"></a>
+<a href="https://pypi.python.org/pypi/fallingsky/"><img src="https://pypip.in/py_versions/fallingsky/badge.svg" alt="Supported Python versions"></a>
+<a href="https://pypi.python.org/pypi/fallingsky/"><img src="https://pypip.in/implementation/fallingsky/badge.svg" alt="Supported Python implementations"></a>
+<a href="https://pypi.python.org/pypi/fallingsky/"><img src="https://pypip.in/status/fallingsky/badge.svg" alt="Development Status"></a>
+<a href="https://pypi.python.org/pypi/fallingsky/"><img src="https://pypip.in/license/fallingsky/badge.svg" alt="License"></a></p>
+
+<p>A game of falling blocks with RPG elements, uses pygame. In very early development, feel free to help out!</p>
+
+<p><img src="https://github.com/a-tal/fallingsky/raw/gh_pages/images/demo.gif" alt=""></p>
+
+<h1>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
+
+<p>First, figure out how to get pygame installed on your platform in whatever interpreter you can. Then clone this repo and install it like a normal python package:</p>
+
+<div class="highlight highlight-bash"><pre>$ git clone https://github.com/a-tal/fallingsky.git
+$ <span class="pl-c1">cd</span> fallingsky
+$ python setup.py install</pre></div>
+
+<p>You will then have a <code>fallingsky</code> executable entry point in your <code>$PATH</code>.</p>
+
+<h1>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration</h1>
+
+<p>Everything in The Tragedy of the Falling Sky is meant to be dynamic. This includes:</p>
+
+<ul>
+<li>the screen resolution</li>
+<li>the block size</li>
+<li>maximum game board width &amp; height</li>
+<li>block drop/turn/move/hold/slam delays</li>
+</ul>
+
+<p>Currently planning on adding game play elements to do with unlocking the ability to adjust these in game. If you want, you can hack around it by changing your user preferences or launching the game through the hack back door (see <a href="https://github.com/a-tal/fallingsky/raw/master/fallingsky/main.py">main.py</a>).</p>
+
+<p>Your user preferences are stored in a platform specific/standard place. On Linux that is <code>~/.config/fallingsky</code>, on Mac it'd be <code>~/Library/Application Support/fallingsky</code> and on Windows, if this works, it'd save to <code>%HOMEDRIVE%\\%HOMEPATH%\\AppData\\Local\\fallingsky</code>. Inside that folder is a list of JSON files for each user. If you wanted to cheat, adjust the values inside those files.</p>
+
+<h1>
+<a id="todos" class="anchor" href="#todos" aria-hidden="true"><span class="octicon octicon-link"></span></a>TODOs</h1>
+
+<p>Obviously the "artwork" is a little rough around the edges. But that's not a super high concern right now, although if someone was to offer up a better color palette that could easily be implemented and would be appreciated.</p>
+
+<p>Need to make a better UI for between games. Something to track progress better, maybe track each score as well instead of just total and best to show progress over time.</p>
+
+<p>Different maps. Shapes other than a rectangle. An interface for the user to select what height+width they want to use if doing arcade mode.</p>
+
+<p>Sound effects. Background music.</p>
+
+<p>Better backgrounds everywhere. Some pattern for arcade mode that painted the game board a bit better as well as the hold area and next area.</p>
+
+<p>An interface to select how many next blocks you want. Next blocks in rows as well as columns. Some mechanism for earning more next blocks.</p>
+
+<p>Better scoring. An interface to show how the difficulty of options you've selected has impacted the score modifier. Better display of points as the user scores them.</p>
+
+<p>Explosion animations.</p>
+
+<p>Configurable controls.</p>
+
+<p>UI to configure the resolution and the block size.</p>
+
+<p>Network capabilities, PvP gameplay elements, AI for PvE.</p>
+
+<h1>
+<a id="copyright-and-license" class="anchor" href="#copyright-and-license" aria-hidden="true"><span class="octicon octicon-link"></span></a>Copyright and License</h1>
+
+<p>The Tragedy of the Falling Sky<br>
+Copyright (C) 2015 Adam Talsma.</p>
+
+<p>This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; version 2.</p>
+
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU General Public License
+along with this program; if not, write to:</p>
+
+<pre><code>Free Software Foundation, Inc.
+51 Franklin Street, Fifth Floor
+Boston, MA, USA 02110-1301
+</code></pre>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
