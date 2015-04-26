@@ -4,7 +4,9 @@ The Tragedy of the Falling Sky
 [View on GitHub pages](http://a-tal.github.io/fallingsky/)
 
 [![Version](https://img.shields.io/pypi/v/fallingsky.svg)](https://pypi.python.org/pypi/fallingsky/)
+[![Build Status](https://img.shields.io/travis/a-tal/fallingsky.svg)](https://travis-ci.org/a-tal/fallingsky)
 [![Download format](https://img.shields.io/badge/format-wheel-green.svg?)](https://pypi.python.org/pypi/fallingsky/)
+[![Test Coverage](https://img.shields.io/coveralls/a-tal/fallingsky.svg)](https://coveralls.io/r/a-tal/fallingsky)
 [![Downloads this month](https://img.shields.io/pypi/dm/fallingsky.svg)](https://pypi.python.org/pypi/fallingsky/)
 [![Supported Python versions](https://img.shields.io/badge/python-2.7,%203.4-blue.svg)](https://pypi.python.org/pypi/fallingsky/)
 [![Supported Python implementations](https://img.shields.io/badge/implementation-cpython-blue.svg)](https://pypi.python.org/pypi/fallingsky/)
