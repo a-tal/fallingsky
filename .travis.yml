@@ -6,8 +6,8 @@ python:
 
 before_install:
   - pip install --upgrade coveralls
-  - apt-get install -y python-pip mercurial
-  - apt-get build-dep -y pygame
+  - sudo apt-get install -y python-pip mercurial
+  - sudo apt-get build-dep -y pygame
   - pip install hg+http://bitbucket.org/pygame/pygame
 
 script: "python setup.py test"
