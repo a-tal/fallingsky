@@ -32,7 +32,7 @@ On MacOS, you can do the following:
 $ brew install python  # missing brew? go here http://brew.sh/
 $ brew install sdl sdl_image sdl_mixer sdl_ttf smpeg portmidi
 $ # create and/or activate a virtualenv here
-$ pip install hg+http://bitbucket.org/pygame/pygame
+$ yes | pip install hg+http://bitbucket.org/pygame/pygame
 ```
 
 On Ubuntu (tested on 15.04 desktop),
