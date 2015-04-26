@@ -19,13 +19,42 @@ A game of falling blocks with RPG elements, uses pygame. In very early developme
 Installation
 ============
 
-First, figure out how to get pygame installed on your platform in whatever interpreter you can. Then clone this repo or install it like a normal python package:
+Pygame
+------
+
+If you don't have pygame installed yet, you'll need that.
+
+On MacOS, you can do the following:
+
+```bash
+$ brew install python  # missing brew? go here http://brew.sh/
+$ brew install sdl sdl_image sdl_mixer sdl_ttf smpeg portmidi
+$ # create and/or activate a virtualenv here
+$ pip install hg+http://bitbucket.org/pygame/pygame
+```
+
+On Ubuntu (tested on 15.04 desktop),
+
+```bash
+$ sudo apt-get install python-pip mercurial
+$ sudo apt-get build-dep pygame
+$ # create and/or activate a virtualenv here
+$ pip install hg+http://bitbucket.org/pygame/pygame
+```
+
+On Windows, install the pygame binaries from [pygame.org](http://pygame.org/download.shtml).
+
+
+Fallingsky
+----------
+
+With pygame installed, you can now clone this repo or install it like a normal python package:
 
 ```bash
 $ pip install fallingsky
 ```
 
-And if you want to grab the source to hack on it as well:
+If you want to grab the source to hack on it as well:
 
 ```bash
 $ git clone https://github.com/a-tal/fallingsky.git
@@ -33,7 +62,7 @@ $ cd fallingsky
 $ python setup.py develop
 ```
 
-Either way, you should now have a `fallingsky` executable entry point in your `$PATH`.
+Either way, you should now have a `fallingsky` executable in your `$PATH`.
 
 
 Configuration
