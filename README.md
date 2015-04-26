@@ -48,7 +48,7 @@ Everything in The Tragedy of the Falling Sky is meant to be dynamic. This includ
 
 Currently planning on adding game play elements to do with unlocking the ability to adjust these in game. If you want, you can hack around it by changing your user preferences or launching the game through the hack back door (see [main.py](https://github.com/a-tal/fallingsky/raw/master/fallingsky/main.py)).
 
-Your user preferences are stored in a platform specific/standard place. On Linux that is `~/.config/fallingsky`, on Mac it'd be `~/Library/Application Support/fallingsky` and on Windows, if this works, it'd save to `%HOMEDRIVE%\\%HOMEPATH%\\AppData\\Local\\fallingsky`. Inside that folder is a list of JSON files for each user. If you wanted to cheat, adjust the values inside those files.
+Your user preferences are stored in a platform specific/standard place. On Linux that is `~/.config/fallingsky`, on Mac it'd be `~/Library/Application Support/fallingsky` and on Windows, if this works, it'd save to `%HOMEDRIVE%\\%HOMEPATH%\\AppData\\Local\\fallingsky`. Inside that folder is a list of JSON files for each user.
 
 
 TODOs
