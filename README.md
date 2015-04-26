@@ -41,7 +41,7 @@ On Ubuntu (tested on 15.04 desktop),
 $ sudo apt-get install python-pip mercurial
 $ sudo apt-get build-dep pygame
 $ # create and/or activate a virtualenv here
-$ pip install hg+http://bitbucket.org/pygame/pygame
+$ yes | pip install hg+http://bitbucket.org/pygame/pygame
 ```
 
 On Windows, install the pygame binaries from [pygame.org](http://pygame.org/download.shtml).
