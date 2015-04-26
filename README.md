@@ -30,7 +30,7 @@ And if you want to grab the source to hack on it as well:
 ```bash
 $ git clone https://github.com/a-tal/fallingsky.git
 $ cd fallingsky
-$ python setup.py install
+$ python setup.py develop
 ```
 
 Either way, you should now have a `fallingsky` executable entry point in your `$PATH`.
