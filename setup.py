@@ -53,7 +53,7 @@ setup(
         "https://gitlab.com/a-tal/kezmenu/repository/archive.tar.bz2#egg=kezmenu",
     ],
     entry_points={"console_scripts": ["fallingsky = fallingsky.main:play"]},
-    url="https://github.com/a-tal/fallingsky",
+    url="http://a-tal.github.io/fallingsky",
     description="A game of falling blocks with RPG elements, uses pygame.",
     long_description=(
         "The Tragedy of the Falling Sky intends to be a RPG style block game. "
