@@ -12,7 +12,7 @@ The Tragedy of the Falling Sky
 
 A game of falling blocks with RPG elements, uses pygame. In very early development, feel free to help out!
 
-![](https://github.com/a-tal/fallingsky/raw/gh_pages/images/demo.gif)
+![](https://raw.githubusercontent.com/a-tal/fallingsky/gh-pages/images/demo.gif)
 
 
 Installation
@@ -26,7 +26,7 @@ $ cd fallingsky
 $ python setup.py install
 ```
 
-You will then have a `fallingsky` executable entry point in your $PATH.
+You will then have a `fallingsky` executable entry point in your `$PATH`.
 
 
 Configuration
