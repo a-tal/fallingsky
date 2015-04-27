@@ -6,19 +6,22 @@ try:
 except ImportError:
     raise SystemExit("unable to import pygame.")
 
-
+import io
+import re
 from setuptools import setup
 from setuptools import find_packages
 from setuptools.command.test import test as TestCommand
 
 
-with open("fallingsky/__init__.py", "r") as openinit:
-    for line in openinit.readlines():
-        if line.startswith("__version__ ="):
-            __version__ = line[14:].replace('"', "").replace('"', "").strip()
-            break
-    else:
-        __version__ = "0.0.0"
+def find_version(filename):
+    """Uses re to pull out the assigned value to __version__ in filename."""
+
+    with io.open(filename, encoding="utf-8") as version_file:
+        version_match = re.search(r'^__version__ = [\'"]([^\'"]*)[\'"]',
+                                  version_file.read(), re.M)
+    if version_match:
+        return version_match.group(1)
+    return "0.0.0"
 
 
 class PyTest(TestCommand):
@@ -43,7 +46,7 @@ class PyTest(TestCommand):
 
 setup(
     name="fallingsky",
-    version=__version__,
+    version=find_version("fallingsky/__init__.py"),
     author="Adam Talsma",
     author_email="adam@talsma.ca",
     packages=find_packages(),
