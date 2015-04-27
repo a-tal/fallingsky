@@ -182,11 +182,12 @@ class MainMenu(object):
     def handle_name_change(self, events):
         """Proccess events during a name change."""
 
-        events, _ = self._handle_keypress(
+        events, player_name = self._handle_keypress(
             events,
             self.player_name,
             self._old_player_name,
         )
+        self.player_name = player_name
         if events is None:
             self.update_player_name()
             return []
