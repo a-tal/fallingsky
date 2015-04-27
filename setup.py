@@ -51,10 +51,7 @@ setup(
     author_email="adam@talsma.ca",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=["kezmenu", "appdirs"],
-    dependency_links=[
-        "https://gitlab.com/a-tal/kezmenu/repository/archive.tar.bz2#egg=kezmenu",
-    ],
+    install_requires=["kezmenu3", "appdirs"],
     entry_points={"console_scripts": ["fallingsky = fallingsky.main:play"]},
     url="http://a-tal.github.io/fallingsky",
     description="A game of falling blocks with RPG elements, uses pygame.",

@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 import os
 import pygame
-from kezmenu import KezMenu
+from kezmenu3 import KezMenu
 
 from fallingsky.game import GameBoard
 from fallingsky.user import get_users
