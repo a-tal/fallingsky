@@ -18,10 +18,17 @@ _USER_PATH = lambda u : os.path.join(_PATH, "{}{}".format(u, _EXT))
 def get_users():
     """Returns a list of all known user names."""
 
-    users = os.listdir(_PATH)
-    return [
-        os.path.splitext(u)[0] for u in users if os.path.splitext(u)[1] == _EXT
-    ]
+    try:
+        users = os.listdir(_PATH)
+    except OSError as error:
+        if error.errno == 2:  # _PATH doesn't exist, first time run
+            os.makedirs(_PATH)
+            return []
+        else:
+            raise
+    else:
+        return [os.path.splitext(u)[0] for u in users if \
+                os.path.splitext(u)[1] == _EXT]
 
 
 def reset_users():
@@ -50,8 +57,6 @@ class UserData(object):
     def __init__(self, user_id):
         self.user_id = user_id
         self.file = _USER_PATH(self.user_id)
-        if not os.path.isdir(_PATH):
-            os.makedirs(_PATH)
         self.defaults = {
             "user_id": self.user_id,
             "wins": 0,
