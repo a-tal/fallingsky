@@ -10,6 +10,30 @@ import json
 import appdirs
 
 
+_PATH = os.path.join(appdirs.user_data_dir(), "Falling Sky")
+_EXT = "{}json".format(os.extsep)
+_USER_PATH = lambda u : os.path.join(_PATH, "{}{}".format(u, _EXT))
+
+
+def get_users():
+    """Returns a list of all known user names."""
+
+    users = os.listdir(_PATH)
+    return [
+        os.path.splitext(u)[0] for u in users if os.path.splitext(u)[1] == _EXT
+    ]
+
+
+def reset_users():
+    """Use to clear all user scores."""
+
+    for user in get_users():
+        try:
+            os.remove(_USER_PATH(user))
+        except:
+            pass
+
+
 class UserData(object):
     """Saves and retrieves and is the user data.
 
@@ -25,10 +49,9 @@ class UserData(object):
 
     def __init__(self, user_id):
         self.user_id = user_id
-        self.path = os.path.join(appdirs.user_data_dir(), "Falling Sky")
-        self.file = os.path.join(self.path, "{}.json".format(self.user_id))
-        if not os.path.isdir(self.path):
-            os.makedirs(self.path)
+        self.file = _USER_PATH(self.user_id)
+        if not os.path.isdir(_PATH):
+            os.makedirs(_PATH)
         self.defaults = {
             "user_id": self.user_id,
             "wins": 0,
@@ -50,7 +73,7 @@ class UserData(object):
 
         if os.path.isfile(self.file):
             try:
-                with io.open(os.path.join(self.path, self.file)) as openuser:
+                with io.open(os.path.join(_PATH, self.file)) as openuser:
                     return json.load(openuser)
             except Exception as error:
                 print("save file corruption. removing.")

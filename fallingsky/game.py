@@ -36,13 +36,15 @@ class GameBoard(object):
 
     def __init__(self):
         self.fonts = {
+            "large": pygame.font.SysFont("arial", 64),
             "normal": pygame.font.SysFont("arial", 28),
             "small": pygame.font.SysFont("courier new", 8),
         }
         self.score = Keeper()
         self.lines = 0
+        self.paused = False
 
-    def render(self, text, font="normal", color=None):
+    def render(self, text, font="normal", color=None, background=None):
         """Uses pygame's font.render to make some text.
 
         Args::
@@ -55,7 +57,8 @@ class GameBoard(object):
             font object to blit somewhere
         """
 
-        return self.fonts[font].render(text, True, color or (255, 255, 255))
+        return self.fonts[font].render(text, True, color or (255, 255, 255),
+                                       background)
 
     def refresh_background(self, dt):
         """Called per clock cycle, updates all graphics."""
@@ -116,6 +119,21 @@ class GameBoard(object):
             (5, self.resolution[1] - 10),  # bottom left corner
         )
 
+        # let the user know if we're paused
+        if self.paused:
+            label = "    PAUSED    "
+            paused = self.render(
+                label,
+                font="large",
+                background=(0, 0, 0),
+            )
+            paused_size = self.fonts["large"].size(label)
+            self.screen.blit(
+                paused,
+                ((self.resolution[0] / 2) - (paused_size[0] / 2),
+                 (self.resolution[1] / 2) - (paused_size[1] / 2)),
+            )
+
         pygame.display.flip()   # flip and we're done for this update
 
     def reset_blocks(self):
@@ -171,8 +189,8 @@ class GameBoard(object):
         # explode all the full lines, remove them from self.blocks
         for line in destroyed_lines:
             for block in blocks_by_line[line]:
-                self.blocks.pop((block.rect.x, block.rect.y))
-                block.explode(self)
+                blk = self.blocks.pop((block.rect.x, block.rect.y))
+                blk.explode(self)
 
         destroyed_lines = sorted(destroyed_lines)
 
@@ -231,9 +249,10 @@ class GameBoard(object):
                             colliders.append(coord)
                         else:
                             colliders.append(desired_move)
-                            self.blocks.pop(coord, None)
-                            block.rect.y += self.blocksize
-                            self.blocks[(block.rect.x, block.rect.y)] = block
+                            blk = self.blocks.pop(coord, None)
+                            if blk:
+                                blk.rect.y += self.blocksize
+                                self.blocks[(blk.rect.x, blk.rect.y)] = blk
 
                         moved_this_loop[line].append((
                             (block.rect.x, block.rect.y), block
@@ -287,7 +306,7 @@ class GameBoard(object):
                 row in range(max_spawn_height)
         }
 
-        for i, block in enumerate(range(self.bonus_block_rate)):
+        for _ in range(self.bonus_block_rate):
 
             rolls_so_far = sum(range_distribution.values())
             while True:
@@ -404,6 +423,24 @@ class GameBoard(object):
         )
         return new_shape
 
+    def end_game(self, menu):
+        """Ends the game, updates the scores in the menu.data object."""
+
+        game_score = self.score.game.get_score()
+        if not isinstance(self.active, bool) and self.active > 0 or \
+                (not self.bonus_blocks and self.bonus_block_rate) or \
+                (not self.bonus_block_rate and game_score > 50000) or \
+                game_score > 100000:
+            menu.data["wins"] += 1
+            menu.data["bonus_block_rate"] += 1
+            self.bonus_block_rate += 1
+        else:
+            menu.data["losses"] += 1
+
+        menu.data["total_score"] += game_score
+        menu.data["best_score"] = max(menu.data["best_score"], game_score)
+        menu.data.save()
+
     def main(self, screen, menu):
         """Main Game routine. Make fun now! :D
 
@@ -494,14 +531,21 @@ class GameBoard(object):
             # handle basic game events; terminate this main loop if the window
             # is closed or the escape key is pressed
 
-            keys = [i for i, key in enumerate(pygame.key.get_pressed()) if key]
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.end_game(menu)
                     return
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
+                        self.end_game(menu)
                         return
+                    elif event.key == pygame.K_p:
+                        self.paused = not self.paused
+
+            if self.paused:
+                keys = []
+            else:
+                keys = [i for i, k in enumerate(pygame.key.get_pressed()) if k]
 
             nuke_keys = False
             for key in keys:
@@ -527,26 +571,13 @@ class GameBoard(object):
                     current_shape.slam_blocks(self)
                     nuke_keys = True
 
-            if self.active:
+            if self.active and not self.paused:
                 current_shape.update(dt, self, [] if nuke_keys else keys)
 
             self.refresh_background(dt) #, background)
 
             if self.active is not True:  # changes from True to int win/loss
-                game_score = self.score.game.get_score()
-                if self.active > 0 or \
-                        (not self.bonus_blocks and self.bonus_block_rate) or \
-                        (not self.bonus_block_rate and game_score > 50000) or \
-                        game_score > 100000:
-                    menu.data["wins"] += 1
-                    self.bonus_block_rate += 1
-                else:
-                    menu.data["losses"] += 1
-
-                menu.data["total_score"] += game_score
-                menu.data["best_score"] = max(menu.data["best_score"], game_score)
-                menu.data.save()
-
+                self.end_game(menu)
                 self.reset_game_board()
                 current_shape = self.get_next_shape()
                 current_shape.make_active(self)
@@ -563,7 +594,6 @@ class GameBoard(object):
                 del current_shape
                 destroyed_lines = self.explode_full_lines()
                 if destroyed_lines:
-                    # print("you destroyed {} lines!!!".format(destroyed_lines))
                     pass  # play a sound here
                 current_shape = self.get_next_shape()
                 current_shape.make_active(self)

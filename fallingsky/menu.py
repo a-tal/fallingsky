@@ -4,11 +4,14 @@
 
 from __future__ import unicode_literals
 
+import os
 import pygame
 from kezmenu import KezMenu
 
 from fallingsky.game import GameBoard
+from fallingsky.user import get_users
 from fallingsky.user import UserData
+from fallingsky.user import reset_users
 # from fallingsky.util import load_image
 
 
@@ -20,29 +23,39 @@ class MainMenu(object):
 
     def __init__(self, resolution, *args, **kwargs):
         self.resolution = resolution
+        self.default_name = "Player 1"
         self.running = True
-        self.injected = False
         self.updating_name = False
         self.help = False
+        self.buffer = 5  # px
         self.font = pygame.font.SysFont("arial", 20)
         super(MainMenu, self).__init__(*args, **kwargs)
+
+    def load_player_data(self, player_name=None):
+        """Loads the player's data, or default_name's."""
+
+        self.player_name = player_name or self.default_name
+        self.data = UserData(self.player_name)
 
     def run_forever(self):
         """Maybe not quite forever, but until the user quits."""
 
         # start the screen object
         screen = pygame.display.set_mode(self.resolution)
-
-        self.player_name = "Player 1"  # TODO: ID auto lookup/registration
-        self.data = UserData(self.player_name)
-
         clock = pygame.time.Clock()
         # background = load_image("background.png")
+
+        users = get_users()
+        if len(users) == 1:
+            self.load_player_data(os.path.splitext(users[0])[0])
+        else:
+            self.load_player_data()  # TODO: player listing
 
         self.menu = KezMenu(
             ["Arcade Mode", lambda: GameBoard().main(screen, self)],
             [self.player_name, self.update_player_name],
             ["Controls", lambda : setattr(self, "help", not self.help)],
+            ["Reset Scores", self.reset_scores],
             ["Quit", lambda: setattr(self, 'running', False)],
         )
         # TODO: change this. should make a player screen where they can see
@@ -62,7 +75,11 @@ class MainMenu(object):
             if self.updating_name is True:
                 events = self.handle_namechange(events)
 
-            self.menu.options[PLAYER_INDEX]["label"] = self.player_name
+            if self.player_name == self.default_name:
+                menu_name = "{} -- Click to change".format(self.default_name)
+            else:
+                menu_name = self.player_name
+            self.menu.options[PLAYER_INDEX]["label"] = menu_name
 
             self.menu.update(events, clock.tick(30) / 1000.0)
             screen.fill((99, 99, 99))  # TODO: make better
@@ -71,34 +88,41 @@ class MainMenu(object):
             if self.help:
                 # add controls/help to bottom
                 controls = [
-                    # render("-- Controls --"),
-                    render("left: ← or A"),
-                    render("right: → or D"),
-                    render("down: ↓ or S"),
-                    render("rotate clockwise: ↑, W, or E"),
-                    render("rotate counter-clockwise: Q"),
-                    render("hold/swap: H"),
-                    render("slam down: space bar"),
+                    # "-- Controls --",
+                    "left: ← or A",
+                    "right: → or D",
+                    "down: ↓ or S",
+                    "rotate clockwise: ↑, W, or E",
+                    "rotate counter-clockwise: Q",
+                    "hold/swap: H",
+                    "slam down: space bar",
+                    "pause: P",
                 ]
 
+                # get the largest possible control label size
+                control_size = self.font.size(max(controls, key=len))
+
+                  # px buffer
                 for i, control in enumerate(controls):
-                    screen.blit(control, (self.resolution[0] - 275,
-                                          self.resolution[1] - 200 + (i * 25)))
+                    screen.blit(render(control), (
+                        self.resolution[0] - (control_size[0] + self.buffer),
+                        self.resolution[1] - (
+                            (control_size[1] * len(controls)) -
+                            (i * control_size[1]) + self.buffer
+                        )
+                    ))
+
+            if self.data["wins"] or self.data["losses"]:
+                label = "wins: {wins} losses: {losses}".format(**self.data.data)
+                win_loss = render(label)
+                win_loss_size = self.font.size(label)
+                screen.blit(win_loss, (
+                    (self.resolution[0] / 2) - (win_loss_size[0] / 2),
+                    self.buffer,
+                ))
 
             self.menu.draw(screen)
             pygame.display.flip()
-            if self.data["wins"] or self.data["losses"]:
-                label = "wins: {wins} losses: {losses}".format(**self.data.data)
-                if not self.injected:
-                    self.injected = True
-                    self.menu.options.append(
-                        {"label": label, "callable": lambda : 1}
-                    )
-                else:
-                    for option in self.menu.options:
-                        if option["label"].startswith("wins: "):
-                            option["label"] = label
-                            break
 
     def handle_namechange(self, events):
         """Proccess events during a name change."""
@@ -134,18 +158,19 @@ class MainMenu(object):
         """Called when someone clicks on the player name."""
 
         if self.updating_name:
-            self.updating_name = False
-            if not self.player_name:  # pressing enter twice, no input, cancels
-                self.player_name = self._old_player_name
-                return
-            self._old_player_name = None
+            # the 'or' here is to catch hitting enter twice with no new input
+            self.load_player_data(self.player_name or self._old_player_name)
             self.menu.mouse_enabled = True
-            self.data = UserData(self.player_name)
-            if self.injected:
-                self.menu.options.pop(-1)
-                self.injected = False
+            self._old_player_name = None
+            self.updating_name = False
         else:
             self.updating_name = True
             self._old_player_name = self.player_name  # save this for cancel
             self.player_name = ""
             self.menu.mouse_enabled = False
+
+    def reset_scores(self):
+        """Called to reset all user data and reload this player's data."""
+
+        reset_users()
+        self.load_player_data(self.player_name)

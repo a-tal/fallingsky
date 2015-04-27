@@ -31,7 +31,7 @@ On MacOS, you can do the following:
 ```bash
 $ brew install python  # missing brew? go here http://brew.sh/
 $ brew install sdl sdl_image sdl_mixer sdl_ttf smpeg portmidi
-$ # create and/or activate a virtualenv here
+$ # create and/or activate a virtualenv here (optional)
 $ yes | pip install hg+http://bitbucket.org/pygame/pygame
 ```
 
@@ -40,7 +40,7 @@ On Ubuntu (tested on 15.04 desktop),
 ```bash
 $ sudo apt-get install python-pip mercurial
 $ sudo apt-get build-dep pygame
-$ # create and/or activate a virtualenv here
+$ # create and/or activate a virtualenv here (optional)
 $ yes | pip install hg+http://bitbucket.org/pygame/pygame
 ```
 
