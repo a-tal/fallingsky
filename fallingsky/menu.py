@@ -29,6 +29,12 @@ class MainMenu(object):
         self.help = False
         self.buffer = 5  # px
         self.font = pygame.font.SysFont("arial", 20)
+        self.magic_sequence = [273, 273, 274, 274, 276, 275, 276, 275, 98, 97]
+        self.magic_available = ["width", "height", "nexts", "blocksize",
+            "fallrate", "bonus_block_rate", "show_shape_spawn_rate"]
+        self.magic_enabled = []
+        self.magic = []
+        self.magical = False
         super(MainMenu, self).__init__(*args, **kwargs)
 
     def load_player_data(self, player_name=None):
@@ -73,7 +79,10 @@ class MainMenu(object):
             events = pygame.event.get()
 
             if self.updating_name is True:
-                events = self.handle_namechange(events)
+                events = self.handle_name_change(events)
+            elif self.magic_enabled:
+                for setting in self.magic_enabled:
+                    events = self._handle_magic_change(events, setting)
 
             if self.player_name == self.default_name:
                 menu_name = "{} -- Click to change".format(self.default_name)
@@ -81,7 +90,8 @@ class MainMenu(object):
                 menu_name = self.player_name
             self.menu.options[PLAYER_INDEX]["label"] = menu_name
 
-            self.menu.update(events, clock.tick(30) / 1000.0)
+            self.handle_magic(events)
+            self.menu.update(events or [], clock.tick(30) / 1000.0)
             screen.fill((99, 99, 99))  # TODO: make better
             # screen.blit(background, (0, 0))
 
@@ -121,21 +131,37 @@ class MainMenu(object):
                     self.buffer,
                 ))
 
+            if self.magical:
+                self._magic_method()
             self.menu.draw(screen)
             pygame.display.flip()
 
-    def handle_namechange(self, events):
-        """Proccess events during a name change."""
+    def _handle_keypress(self, events, keylist, cancel_list=None):
+        """Handles keypresses into a list.
+
+        Args::
+
+            events: list from pygame.event.get()
+            keylist: list to append/delete from on user input
+            cancel_list: list to return to should the user cancel, or None
+
+        Returns:
+            Events not consumed, an empty list, or None on cancel
+        """
+
+        if cancel_list is None:
+            cancel_list = keylist
 
         scrubbed_events = []
         for event in events:
-            if "KeyDown" in pygame.event.event_name(event.type):
+            if event.type == pygame.KEYDOWN:
                 if event.key == 27:  # esc/cancel
-                    self.player_name = self._old_player_name
-                    self.update_player_name()
+                    keylist = cancel_list
+                    return None
                 elif event.key in (92, 8):  # backspace(s)
-                    self.player_name = self.player_name[:-1]
-                elif event.key not in (13,):  # 13 == enter
+                    keylist = keylist[:-1]
+                elif event.key not in (13,) and len(keylist) <= 12:
+                    # 13 == enter and 12 is some limit to name length
                     try:
                         key = chr(event.key)
                     except ValueError:
@@ -145,14 +171,103 @@ class MainMenu(object):
                         if pygame.key.get_mods() in (1, 8192):
                             # checks for shift or caps lock, and both
                             key = key.capitalize()
-                        self.player_name += key
+                        keylist += key
                 else:
                     scrubbed_events.append(event)
             else:
                 scrubbed_events.append(event)
 
-        # 2nd item in the list is the players name, update it
-        return scrubbed_events
+        return scrubbed_events, keylist
+
+    def handle_name_change(self, events):
+        """Proccess events during a name change."""
+
+        events, _ = self._handle_keypress(
+            events,
+            self.player_name,
+            self._old_player_name,
+        )
+        if events is None:
+            self.update_player_name()
+            return []
+        else:
+            return events
+
+    def _handle_magic_change(self, events, keylist):
+        if not events:
+            return
+        events, updated = self._handle_keypress(
+            events,
+            keylist=self.data.data[keylist],
+            cancel_list=self.data.data["old_{}".format(keylist)],
+        )
+        self.data[keylist] = updated
+        return events or []
+
+    def _magic_width(self):
+        self._magic_int_change("width")
+
+    def _magic_height(self):
+        self._magic_int_change("height")
+
+    def _magic_nexts(self):
+        self._magic_int_change("nexts")
+
+    def _magic_blocksize(self):
+        self._magic_int_change("blocksize")
+
+    def _magic_fallrate(self):
+        self._magic_int_change("fallrate")
+
+    def _magic_bonus_block_rate(self):
+        self._magic_int_change("bonus_block_rate")
+
+    def _magic_int_change(self, key):
+        if not "old_{}".format(key) in self.data:
+            self.data["old_{}".format(key)] = self.data[key]
+            self.magic_enabled.append(key)
+            self.data[key] = ""
+        else:
+            old_setting = self.data.pop("old_{}".format(key))
+            try:
+                self.data[key] = int(self.data[key])
+            except:
+                self.data[key] = old_setting
+            self.data.save()
+            self.magic_enabled = []
+
+    def _magic_show_shape_spawn_rate(self):
+        self.data["show_shape_spawn_rate"] = not self.data["show_shape_spawn_rate"]
+        self.data.save()
+
+    def _magic_method(self):
+        """Just checks the time."""
+
+        if not hasattr(self, "_magic_init"):
+            self._magic_init = True
+            for key in sorted(self.magic_available, key=len):
+                self.menu.options.append({
+                    "label": "{}: {}".format(key, self.data[key]),
+                    "callable": getattr(self, "_magic_{}".format(key)),
+                })
+        else:
+            for key, val in self.data.items():
+                for option in self.menu.options:
+                    if option["label"].startswith(key):
+                        option["label"] = "{}: {}".format(key, val)
+                        break
+
+    def handle_magic(self, events):
+        """Doesn't do anything."""
+
+        for e in events or []:
+            if e.type == 2:
+                self.magic.append(e.key)
+                for i, q in zip(self.magic, self.magic_sequence):
+                    if i != q: self.magic = []; break
+                else:
+                    if len(self.magic) == len(self.magic_sequence):
+                        self.magical = True
 
     def update_player_name(self):
         """Called when someone clicks on the player name."""

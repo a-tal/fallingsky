@@ -82,6 +82,12 @@ class Blocks(object):
             raise TypeError("block {} is not a known block!".format(block))
         elif not hasattr(Blocks, "_image_cache"):
             setattr(Blocks, "_image_cache", {})
+        if not hasattr(Blocks, "_image_cache_size"):
+            setattr(Blocks, "_image_cache_size", size)
+
+        if size != Blocks._image_cache_size:  # blocksize changed, regen
+            Blocks._image_cache = {}
+            Blocks._image_cache_size = size
 
         if block not in Blocks._image_cache:
             Blocks._image_cache[block] = Blocks._gen_image_string(block, size)
@@ -186,7 +192,7 @@ class Blocks(object):
 
 
 class Block(pygame.sprite.Sprite):
-    def __init__(self, location, block, bonus_points, game, *groups):
+    def __init__(self, location, block, bonus_points, game, *groups, **kwargs):
         super(Block, self).__init__(*groups)
         self.image = pygame.image.fromstring(
             Blocks.image_as_string(block, game.blocksize),
@@ -196,7 +202,7 @@ class Block(pygame.sprite.Sprite):
         self.rect = pygame.rect.Rect(location, (game.blocksize,) * 2)
         self.exploding = False
         self.bonus_points = bonus_points
-        self.visible = True
+        self.visible = kwargs.get("visible", True)
         self.name = block
 
     def update(self, dt, game):

@@ -50,7 +50,7 @@ class Shape(object):
         groups
     """
 
-    def __init__(self, game, position=0, shape=None):
+    def __init__(self, game, position=0, shape=None, visible=True):
         if shape is None:
             self.shape = 3 if IMADEVELOPER else not_so_random_shape(game)
         else:
@@ -94,9 +94,8 @@ class Shape(object):
             block_positions = self._locations_in_queue(game)
 
         for location in block_positions:
-            self.blocks.append(
-                Block(location, self.shape_name, 0, game, game.sprites)
-            )
+            self.blocks.append(Block(location, self.shape_name, 0, game,
+                                     game.sprites, visible=visible))
 
         self.shadow_blocks = []
 
@@ -213,6 +212,7 @@ class Shape(object):
             for coords, block in zip(move_locations, self.blocks):
                 block.rect.x = coords[0]
                 block.rect.y = coords[1]
+                block.visible = True
             self.spawn_shadow_blocks(game)
             self.falling = True
             self.fall_rate = max(1100 - (game.fallrate * 50), 65)

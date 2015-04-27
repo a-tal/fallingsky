@@ -355,6 +355,8 @@ class GameBoard(object):
                     # ignored, but accept it statistically to spawn other areas
                     pass
             finally:
+                if this_row is None:
+                    break  # there are no more available rows
                 row_spawns[this_row] += 1
 
             if above:
@@ -415,13 +417,16 @@ class GameBoard(object):
         Moves forward all other members and spawns a new one at the end.
         """
 
-        new_shape = self.next_queue.pop(0)
-        for next_shape in self.next_queue:
-            next_shape.move_closer(self)
-        self.next_queue.append(
-            Shape(game=self, position=self.nexts - 1)
-        )
-        return new_shape
+        if self.next_queue:
+            new_shape = self.next_queue.pop(0)
+            for next_shape in self.next_queue:
+                next_shape.move_closer(self)
+            self.next_queue.append(
+                Shape(game=self, position=self.nexts - 1)
+            )
+            return new_shape
+        else:
+            return Shape(game=self, position=1, visible=False)
 
     def end_game(self, menu):
         """Ends the game, updates the scores in the menu.data object."""
@@ -574,8 +579,6 @@ class GameBoard(object):
             if self.active and not self.paused:
                 current_shape.update(dt, self, [] if nuke_keys else keys)
 
-            self.refresh_background(dt) #, background)
-
             if self.active is not True:  # changes from True to int win/loss
                 self.end_game(menu)
                 self.reset_game_board()
@@ -600,6 +603,8 @@ class GameBoard(object):
                 swappped = False
                 slam_available = slam_delay
                 swap_available = swap_delay
+
+            self.refresh_background(dt) #, background)
 
 
 class SoundEffects(object):

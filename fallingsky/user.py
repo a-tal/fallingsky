@@ -71,7 +71,32 @@ class UserData(object):
             "bonus_block_rate": 0,
             "show_shape_spawn_rate": False,
         }
-        self.data = self._fetch()
+        self.data = self._sanity_check(self._fetch())
+
+    def _sanity_check(self, config):
+        """Ensure the values are sane and no extra keys are present."""
+
+        limits = {
+            "blocksize": lambda x : max(min(x // 2 * 2, 32), 1),
+            "nexts": lambda x : max(min(x, 8), 0),
+            "height": lambda x : max(min(x, 199), 10),
+            "width": lambda x : max(min(x, 299), 6),
+            "fallrate": lambda x : max(min(x, 21), 1),
+            "bonus_block_rate": lambda x: max(min(x, 50), 0),
+        }
+
+        for key, func in limits.items():
+            config[key] = func(config[key])
+
+        keys_to_pop = []
+        for key in config.keys():
+            if key not in self.defaults:
+                keys_to_pop.append(key)
+
+        for key in keys_to_pop:
+            config.pop(key)
+
+        return config
 
     def _fetch(self):
         """Fetches the data from the user data store."""
@@ -90,6 +115,7 @@ class UserData(object):
     def save(self):
         """Saves the user data with the user data store."""
 
+        self.data = self._sanity_check(self.data)
         with open(self.file, "w") as openuser:
             json.dump(self.data, openuser)
 
@@ -103,12 +129,27 @@ class UserData(object):
 
         return self.data.__setitem__(key, value)
 
+    def __contains__(self, key):
+        """Returns Dict.__contains__ on self.data."""
+
+        return key in self.data
+
     def get(self, item, default=None):
         """Returns Dict.get on self.data."""
 
         return self.data.get(item, default)
 
+    def pop(self, key, *args):
+        """Returns Dict.pop on self.data."""
+
+        return self.data.pop(key, *args)
+
     def update(self, other):
         """Dictionary update on self.data. THIS IS NOT THE SAVE METHOD!"""
 
         return self.data.update(other)
+
+    def items(self):
+        """Passthrough to self.data.items()."""
+
+        return self.data.items()
