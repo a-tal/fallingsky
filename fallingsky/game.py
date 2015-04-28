@@ -18,6 +18,7 @@ from fallingsky.score import Keeper
 from fallingsky.shapes import Shape
 from fallingsky.shapes import Shapes
 from fallingsky.user import UserData
+from fallingsky.util import Coord
 from fallingsky.util import load_image
 # from fallingsky.util import load_sound
 from fallingsky.walls import arcade_mode
@@ -38,7 +39,7 @@ class GameBoard(object):
         self.fonts = {
             "large": pygame.font.SysFont("arial", 64),
             "normal": pygame.font.SysFont("arial", 28),
-            "small": pygame.font.SysFont("courier new", 8),
+            "small": pygame.font.SysFont("courier new", 12),
         }
         self.score = Keeper()
         self.lines = 0
@@ -86,9 +87,10 @@ class GameBoard(object):
                 "best: {:,}".format(int(self.score.best))
             ))
 
-        if self.bonus_blocks:  # once they get 100k points
+        if self.bonus_blocks:  # once they get 100k points, point val of bonus
             stats.append(self.render("bonus: {:,}".format(sum([
-                self.blocks[coord].bonus_points for coord in self.bonus_blocks
+                block["sprite"].bonus_points for coord in self.bonus_blocks \
+                    for block in self.blocks if block["coord"] == coord
             ]))))
         elif self.bonus_block_rate:
             stats.append(self.render(
@@ -109,14 +111,18 @@ class GameBoard(object):
         for i, stat in enumerate(stats):  # draw the rendered fonts on screen
             self.screen.blit(stat, (60, 30 + (i * 30)))
 
-        # display name and version
+        name_and_stats = (
+            "The Tragedy of the Falling Sky v{} | {:.2f} fps | {:,} sprites"
+        ).format(
+            __version__,
+            self.clock.get_fps(),
+            len(self.sprites),
+        )
+        name_and_stats_size = self.fonts["small"].size(name_and_stats)
+
         self.screen.blit(
-            self.render(
-                "The Tragedy of the Falling Sky v{}".format(__version__),
-                font="small",
-                color=(0, 0, 0),
-            ),
-            (5, self.resolution[1] - 10),  # bottom left corner
+            self.render(name_and_stats, font="small", color=(0, 0, 0)),
+            (5, self.resolution[1] - name_and_stats_size[1]),
         )
 
         # let the user know if we're paused
@@ -139,7 +145,10 @@ class GameBoard(object):
     def reset_blocks(self):
         """Resets self.blocks to a dict of {coords: None} for the walls."""
 
-        self.blocks = {coord: None for coord in self.walls}
+        self.blocks = []
+        for wall in self.walls:
+            self.blocks.append({"coord": Coord(*wall), "sprite": None})
+
         for sprite in self.sprites:
             if hasattr(sprite, "explode"):
                 sprite.explode(self)
@@ -160,12 +169,9 @@ class GameBoard(object):
         """
 
         blocks_per_line = Counter()
-        blocks_by_line = defaultdict(list)
-
-        for coords, block in self.blocks.items():
-            if block is not None:
-                blocks_per_line[coords[1]] += 1
-                blocks_by_line[coords[1]].append(block)
+        for block in self.blocks:
+            if block["sprite"] is not None:
+                blocks_per_line[block["coord"].y] += 1
 
         destroyed_lines = []
         for line, count in blocks_per_line.items():
@@ -187,78 +193,64 @@ class GameBoard(object):
             self.lines_until_speed_up = self.lines_per_level
 
         # explode all the full lines, remove them from self.blocks
+        blocks_to_remove = []
+        bonus_readds = []
         for line in destroyed_lines:
-            for block in blocks_by_line[line]:
-                blk = self.blocks.pop((block.rect.x, block.rect.y))
-                blk.explode(self)
+            for block in self.blocks:
+                if block["sprite"] is not None and block["coord"].y == line:
+                    coord, level = block["sprite"].explode(self)
+                    # checks for death return from bonus blocks
+                    if level:
+                        bonus_readds.append({
+                            "level": level,
+                            "location": coord,
+                        })
+                    else:
+                        try:
+                            self.bonus_blocks.remove(coord)
+                        except ValueError:
+                            pass
+                    blocks_to_remove.append(block)
+
+        for block in blocks_to_remove:
+            self.blocks.remove(block)
+
+        del blocks_to_remove
+
+        for bonus_readd in bonus_readds:
+            self.spawn_bonus_block(**bonus_readd)
 
         destroyed_lines = sorted(destroyed_lines)
 
-        if destroyed_lines:  # this call is expensive and recursive
+        if destroyed_lines:  # recursive
             num_lines_destroyed += self.blocks_fall_down(destroyed_lines)
 
         return num_lines_destroyed
 
-    def _get_blocks_to_move(self, destroyed_lines):
-        """Determines the lines connected to the destroyed lines.
-
-        Returns:
-            dictionary of line num: list of moved block sprites in that line
-        """
-
-        connected_lines = list(destroyed_lines)
-        moved_blocks = defaultdict(list)
-
-        line = connected_lines[0]
-        line_found = True
-        while line_found:  # check up
-            line -= self.blocksize
-
-            if line in connected_lines:
-                continue
-
-            line_found = False
-            for coords, block in self.blocks.items():
-                if coords[1] == line and block:
-                    if line not in connected_lines:
-                        connected_lines.append(line)
-                        line_found = True
-                    moved_blocks[line].append((coords, block))
-
-        return moved_blocks
-
     def blocks_fall_down(self, destroyed_lines):
         """Moves the rest of the board downwards for the destroyed lines."""
 
-        moved_blocks = self._get_blocks_to_move(destroyed_lines)
-        colliders = list(self.bonus_blocks)
+        column_stops = {}
+        for bonus_block in self.bonus_blocks:
+            column_stops[bonus_block.x] = bonus_block.y
 
-        for _ in range(len(destroyed_lines)):
-            moved_this_loop = defaultdict(list)
-
-            for line, blocks in reversed(sorted(moved_blocks.items())):
-                for coord, block in blocks:
-                    if block is None or block.bonus_points:
-                        moved_this_loop[line].append((coord, block))
-                    else:
-                        # clean up current position if we're moving down multiple lines
-                        if coord in colliders:
-                            colliders.remove(coord)
-                        desired_move = (coord[0], coord[1] + self.blocksize)
-                        if desired_move in colliders:
-                            colliders.append(coord)
-                        else:
-                            colliders.append(desired_move)
-                            blk = self.blocks.pop(coord, None)
-                            if blk:
-                                blk.rect.y += self.blocksize
-                                self.blocks[(blk.rect.x, blk.rect.y)] = blk
-
-                        moved_this_loop[line].append((
-                            (block.rect.x, block.rect.y), block
-                        ))
-
-            moved_blocks = moved_this_loop
+        for line in destroyed_lines:
+            for block in self.blocks:
+                if block["sprite"] is not None and \
+                       not block["sprite"].bonus_points and \
+                       block["coord"].y < line and \
+                       not (block["coord"].x in column_stops and \
+                            block["coord"].y < column_stops[block["coord"].x] \
+                            and line >= column_stops[block["coord"].x]):
+                    # if block is not a wall, not a bonus block, above the line
+                    # that exploded, and/or if it's in a column with a bonus
+                    # block beneath it, and the line exploded above the bonus
+                    # block, leaving a gap to fall into, then fall down
+                    block["coord"] = Coord(
+                        block["coord"].x,
+                        block["coord"].y + self.blocksize,
+                    )
+                    block["sprite"].rect.y += self.blocksize
 
         # it is possible that we've moved down to make another full line
         return self.explode_full_lines()
@@ -367,7 +359,7 @@ class GameBoard(object):
             column = random.sample(row_columns[this_row], 1)[0]
             row_columns[this_row].remove(column)
             level = random.randint(3, 5)
-            location = (
+            location = Coord(
                 self.centre_px + (column * self.blocksize),
                 self.vertical_offset + ((self.height - this_row - 3) * self.blocksize)
             )
@@ -376,13 +368,16 @@ class GameBoard(object):
     def spawn_bonus_block(self, location, level):
         """Creates a bonus block at location and bonus level."""
 
-        self.blocks[location] = Block(
-            location,
-            "bonus_{}".format(level),
-            level,
-            self,
-            self.sprites,
-        )
+        self.blocks.append({
+            "coord": location,
+            "sprite": Block(
+                location,
+                "bonus_{}".format(level),
+                level,
+                self,
+                self.sprites,
+            ),
+        })
         if location not in self.bonus_blocks:
             self.bonus_blocks.append(location)
 
@@ -390,10 +385,10 @@ class GameBoard(object):
         """Explodes everything and resets the gameboard."""
 
         # explode the board
-        for _, block in self.blocks.items():
-            if block is not None:
-                block.bonus_points = 0
-                block.explode(self)
+        for block in self.blocks:
+            if block["sprite"] is not None:
+                block["sprite"].bonus_points = 0
+                block["sprite"].explode(self)
 
         # explode the next queue
         for shape in self.next_queue:
@@ -456,7 +451,7 @@ class GameBoard(object):
         """
 
         # grab a clock so we can limit and measure the passing of time
-        clock = pygame.time.Clock()
+        self.clock = pygame.time.Clock()
 
         # TODO: make a real background
         # background = load_image("background.png")
@@ -530,7 +525,7 @@ class GameBoard(object):
         while True:
             # limit updates to 30 times per second and determine how much time
             # passed since the last update
-            dt = clock.tick(60)
+            dt = self.clock.tick(60)
             slam_available -= dt
             swap_available -= dt
             # handle basic game events; terminate this main loop if the window

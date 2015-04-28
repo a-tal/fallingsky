@@ -11,6 +11,7 @@ import pygame
 import random
 
 from fallingsky.block import Block
+from fallingsky.util import Coord
 
 
 IMADEVELOPER = False
@@ -129,6 +130,7 @@ class Shape(object):
 
         # self.blocks exists at this point, is active, and can abuse the coords
         shadow_blocks = [(block.rect.x, block.rect.y) for block in self.blocks]
+        game_coords = [block["coord"] for block in game.blocks]
         think_of_the_bits = game.height * 2
         finished = False
         while not finished and think_of_the_bits > 0:
@@ -136,7 +138,7 @@ class Shape(object):
             shadow_blocks_next = []
             for block in shadow_blocks:
                 new_coord = (block[0], block[1] + game.blocksize)
-                if new_coord in game.blocks:
+                if new_coord in game_coords:
                     finished = True  # double break
                     break
                 else:
@@ -229,12 +231,13 @@ class Shape(object):
         """
 
         move_locations = []
+        game_coords = [block["coord"] for block in game.blocks]
         for block_offset in self.offset_coords:
-            location = (
+            location = Coord(
                 game.centre_px + block_offset[0],
                 self.vertical_offset + block_offset[1],
             )
-            if location in game.blocks:
+            if location in game_coords:
                 game.active = 0
                 self.falling = False
                 return False
@@ -243,13 +246,15 @@ class Shape(object):
 
         return move_locations
 
-    def _move_coords(self, game, coords, left=False, right=False, down=False):
+    def _move_coords(self, game, coords, game_coords, left=False, right=False,
+                     down=False):
         """Determins the coordinates possible to move from coords in direction.
 
         Args::
 
             game: GameBoard object which requested this Shape
             coords: tuple of (x, y) coordinates currently at
+            game_coords: list of tuple of collidable blocks in play
             left: boolean to request leftbound movement
             right: boolean to request rightward movement
             down: boolean to request movement downwards
@@ -259,21 +264,23 @@ class Shape(object):
         """
 
         if left:
-            desired_coords = (coords[0] - game.blocksize, coords[1])
+            desired_coords = Coord(coords[0] - game.blocksize, coords[1])
         elif right:
-            desired_coords = (coords[0] + game.blocksize, coords[1])
+            desired_coords = Coord(coords[0] + game.blocksize, coords[1])
         elif down:
-            desired_coords = (coords[0], coords[1] + game.blocksize)
+            desired_coords = Coord(coords[0], coords[1] + game.blocksize)
 
-        return coords if desired_coords in game.blocks else desired_coords
+        return coords if desired_coords in game_coords else desired_coords
 
     def _move_blocks(self, game, left=False, right=False, down=False):
         """Moves all the blocks in self.blocks the direction asked."""
 
         block_moves = []
+        game_coords = [block["coord"] for block in game.blocks]
         for block in self.blocks:
-            coords = (block.rect.x, block.rect.y)
-            new_coords = self._move_coords(game, coords, left, right, down)
+            coords = Coord(block.rect.x, block.rect.y)
+            new_coords = self._move_coords(game, coords, game_coords, left,
+                                           right, down)
             if coords == new_coords:
                 if down:
                     if self.bottom_mercy > 0:  # mercy granted, this time
@@ -282,7 +289,10 @@ class Shape(object):
 
                     # we've hit ground, add coords and block to game.blocks
                     for block, shadow in zip(self.blocks, self.shadow_blocks):
-                        game.blocks[(block.rect.x, block.rect.y)] = block
+                        game.blocks.append({
+                            "coord": Coord(block.rect.x, block.rect.y),
+                            "sprite": block,
+                        })
                         shadow.explode(game)
 
                     self.shadow_blocks = []
@@ -313,22 +323,27 @@ class Shape(object):
             shadow.explode(game)
         self.shadow_blocks = []
 
+        game_coords = [block["coord"] for block in game.blocks]
+
         # we may be unable to move downwards, when slamming while losing
         for block in self.blocks:
-            coords = (block.rect.x, block.rect.y)
-            if self._move_coords(game, coords, down=True) == coords:
+            coords = Coord(block.rect.x, block.rect.y)
+            if self._move_coords(game, coords, game_coords, down=True) == coords:
                 # we're done moving, make us colliadable
-                for blk in self.blocks:
-                    game.blocks[(blk.rect.x, blk.rect.y)] = blk
-                shadow_coords = []
+                desired_coords = None
                 break
         else:
-            shadow_coords = self._shadow_coords(game)
+            desired_coords = self._shadow_coords(game)
 
-        if len(shadow_coords) == 4:
-            for block, coords in zip(self.blocks, shadow_coords):
+        if desired_coords:
+            for block, coords in zip(self.blocks, desired_coords):
                 block.rect.x, block.rect.y = coords[0], coords[1]
-                game.blocks[coords] = block
+
+        for block in self.blocks:
+            game.blocks.append({
+                "coord": Coord(block.rect.x, block.rect.y),
+                "sprite": block,
+            })
 
         self.falling = False
 
@@ -348,6 +363,7 @@ class Shape(object):
             return False  # square blocks don't rotate...
 
         requested_movements = []
+        game_coords = [block["coord"] for block in game.blocks]
         centre = (self.blocks[2].rect.x, self.blocks[2].rect.y)
         for offset, block in zip(self.offset_coords, self.blocks):
             if clockwise:
@@ -355,12 +371,12 @@ class Shape(object):
             else:
                 move_offset = (offset[1], (-1 * offset[0]))
 
-            requested_move = (
+            requested_move = Coord(
                 centre[0] + move_offset[0],
                 centre[1] + move_offset[1],
             )
-            if requested_move in game.blocks:
-                if game.blocks[requested_move] is None and retry <= 2:
+            if requested_move in game_coords:
+                if requested_move in game.walls and retry <= 2:
                     return self._shift_retry_rotate(game, clockwise, retry)
                 else:
                     return False

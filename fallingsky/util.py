@@ -3,6 +3,10 @@
 
 import os
 import pygame
+from collections import namedtuple
+
+
+Coord = namedtuple("Coord", ("x", "y"))
 
 
 def _here():

@@ -12,6 +12,7 @@ import struct
 from collections import namedtuple
 
 from fallingsky.score import Keeper
+from fallingsky.util import Coord
 
 
 class Blocks(object):
@@ -219,12 +220,10 @@ class Block(pygame.sprite.Sprite):
         if self.bonus_points:
             # this is a multiplier for the last score added
             game.score.game.multiply_last(self.bonus_points)
-            my_location = (self.rect.x, self.rect.y)
-            next_level = self.bonus_points - 1
-            if next_level:
-                game.spawn_bonus_block(my_location, next_level)
-            else:
-                game.bonus_blocks.remove(my_location)
+            # Return our coords and next bonus level
+            return Coord(self.rect.x, self.rect.y), self.bonus_points - 1
+        else:
+            return None, 0
 
 
 if __name__ == "__main__":
