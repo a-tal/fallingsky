@@ -57,14 +57,14 @@
 
 <div class="highlight highlight-bash"><pre>$ brew install python  <span class="pl-c"># missing brew? go here http://brew.sh/</span>
 $ brew install sdl sdl_image sdl_mixer sdl_ttf smpeg portmidi
-$ <span class="pl-c"># create and/or activate a virtualenv here</span>
+$ <span class="pl-c"># create and/or activate a virtualenv here (optional)</span>
 $ yes <span class="pl-k">|</span> pip install hg+http://bitbucket.org/pygame/pygame</pre></div>
 
 <p>On Ubuntu (tested on 15.04 desktop),</p>
 
 <div class="highlight highlight-bash"><pre>$ sudo apt-get install python-pip mercurial
 $ sudo apt-get build-dep pygame
-$ <span class="pl-c"># create and/or activate a virtualenv here</span>
+$ <span class="pl-c"># create and/or activate a virtualenv here (optional)</span>
 $ yes <span class="pl-k">|</span> pip install hg+http://bitbucket.org/pygame/pygame</pre></div>
 
 <p>On Windows, install the pygame binaries from <a href="http://pygame.org/download.shtml">pygame.org</a>.</p>
@@ -98,7 +98,7 @@ $ python setup.py develop</pre></div>
 
 <p>Currently planning on adding game play elements to do with unlocking the ability to adjust these in game. If you want, you can hack around it by changing your user preferences or launching the game through the hack back door (see <a href="https://github.com/a-tal/fallingsky/raw/master/fallingsky/main.py">main.py</a>).</p>
 
-<p>Your user preferences are stored in a platform specific/standard place. On Linux that is <code>~/.config/fallingsky</code>, on Mac it'd be <code>~/Library/Application Support/fallingsky</code> and on Windows, if this works, it'd save to <code>%HOMEDRIVE%\\%HOMEPATH%\\AppData\\Local\\fallingsky</code>. Inside that folder is a list of JSON files for each user.</p>
+<p>Your user preferences are stored in a platform specific/standard place. On Linux that is <code>~/.config/Falling Sky</code>, on Mac it'd be <code>~/Library/Application Support/Falling Sky</code> and on Windows it's <code>%HOMEDRIVE%\\%HOMEPATH%\\AppData\\Local\\Falling Sky</code>. Inside that folder is a list of JSON files for each user.</p>
 
 <h1>
 <a id="todos" class="anchor" href="#todos" aria-hidden="true"><span class="octicon octicon-link"></span></a>TODOs</h1>
