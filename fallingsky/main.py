@@ -6,10 +6,11 @@ import pygame
 from fallingsky import shapes
 from fallingsky.menu import MainMenu
 from fallingsky.game import GameBoard
+from fallingsky.util import Coord
 
 
 # 3:2, 960x640 -- shared resolution between android and ios
-STANDARD_RESOLUTION = (960, 640)
+STANDARD_RESOLUTION = Coord(960, 640)
 
 
 def play():

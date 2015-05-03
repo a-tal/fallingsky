@@ -66,6 +66,53 @@ class GameBoard(object):
 
         self.screen.fill((111, 111, 111))  # TODO: make better
 
+        area_border_color = (200, 200, 200)  # TODO: make better
+
+        # hold area
+        hold_font = self.render("Hold")
+        hold_size = self.fonts["normal"].size("Hold")
+        hold_top  = self.vertical_offset - (self.blocksize * 2.5)
+        hold_left = self.centre_px - ((self.width + 2.5) * self.blocksize)
+        self.screen.blit(hold_font, (
+            hold_left + (((self.blocksize * 6) - hold_size[0]) / 2),
+            self.vertical_offset - (self.blocksize * 2.5) - hold_size[1],
+        ))
+        pygame.draw.rect(
+            self.screen,
+            area_border_color,
+            (hold_left, hold_top, self.blocksize * 6, self.blocksize * 6),
+            self.blocksize // 6,  # border thickness
+        )
+
+        if self.nexts > 1:
+            # next area
+            next_font = self.render("Next")
+            next_size = self.fonts["normal"].size("Next")
+            next_left = self.centre_px + ((self.width - 3.5) * self.blocksize)
+            self.screen.blit(next_font, (
+                next_left + (((self.blocksize * 6) - next_size[0]) / 2),
+                self.vertical_offset - (self.blocksize * 2.5) - next_size[1],
+            ))
+            pygame.draw.rect(
+                self.screen,
+                area_border_color,
+                (
+                    next_left,
+                    hold_top,
+                    self.blocksize * 6,
+                    self.nexts * self.blocksize * 3,
+                ),
+                self.blocksize // 6,
+            )
+
+        # game area fill
+        self.screen.fill((90, 90, 90), (
+            self.centre_px - ((self.width // 2) * self.blocksize),
+            self.vertical_offset + self.blocksize,
+            self.width * self.blocksize,
+            (self.height - 2) * self.blocksize,
+        ))
+
         # go through the game sprites and update/reblit them if visible
         for sprite in self.sprites:
             sprite.update(dt, self)

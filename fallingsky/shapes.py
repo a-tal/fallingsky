@@ -182,7 +182,7 @@ class Shape(object):
         """Move this shape to the hold area."""
 
         block_positions = []
-        right_shift = (((game.width // 2) + 4) * game.blocksize)
+        right_shift = (((game.width // 2) + 5) * game.blocksize)
         for block_offset in self.offset_coords:
             location = (
                 game.centre_px + block_offset[0] - right_shift,
