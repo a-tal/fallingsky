@@ -3,6 +3,7 @@ The Tragedy of the Falling Sky
 
 [View on GitHub pages](http://a-tal.github.io/fallingsky/)
 
+[![Join the chat at https://gitter.im/a-tal/fallingsky](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/a-tal/fallingsky?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Version](https://img.shields.io/pypi/v/fallingsky.svg)](https://pypi.python.org/pypi/fallingsky/)
 [![Build Status](https://img.shields.io/travis/a-tal/fallingsky.svg)](https://travis-ci.org/a-tal/fallingsky)
 [![Download format](https://img.shields.io/badge/format-wheel-green.svg?)](https://pypi.python.org/pypi/fallingsky/)
