@@ -1,6 +1,8 @@
 The Tragedy of the Falling Sky
 ==============================
 
+[![Join the chat at https://gitter.im/a-tal/fallingsky](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/a-tal/fallingsky?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [View on GitHub pages](http://a-tal.github.io/fallingsky/)
 
 [![Version](https://img.shields.io/pypi/v/fallingsky.svg)](https://pypi.python.org/pypi/fallingsky/)
