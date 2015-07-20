@@ -3,7 +3,6 @@
 
 import pygame
 
-from fallingsky import shapes
 from fallingsky.menu import MainMenu
 from fallingsky.game import GameBoard
 from fallingsky.util import Coord
@@ -40,14 +39,16 @@ def play_hack():
             "blocksize": 4,  # this is multiplied by 4 to ensure proper centres
             "fallrate": 1,   # drop speed, aka level. from 1-21
             "bonus_block_rate": 0,  # number of bonus blocks/number of wins
-            "show_shape_spawn_rate": False,  # shows your % shape spawns
+            "spawn_rate": False,  # shows your % shape spawns
         }
+
         def __init__(self, res):
             self.resolution = res
             self.losses = 0
             self.wins = 0
 
-    # uncomment the next line if you want every shape to be a line
+    # uncomment the next two lines if you want every shape to be a line
+    # from fallingsky import shapes
     # shapes.IMADEVELOPER = True
 
     GameBoard().main(

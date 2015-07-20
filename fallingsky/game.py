@@ -3,24 +3,19 @@
 
 from __future__ import division
 
-import os
 import pygame
 import random
-import tempfile
 
 from collections import Counter
 from collections import namedtuple
-from collections import defaultdict
 
 from fallingsky import __version__
 from fallingsky.block import Block
 from fallingsky.score import Keeper
 from fallingsky.shapes import Shape
 from fallingsky.shapes import Shapes
-from fallingsky.user import UserData
 from fallingsky.util import Coord
 from fallingsky.util import load_image
-# from fallingsky.util import load_sound
 from fallingsky.walls import arcade_mode
 
 
@@ -39,7 +34,7 @@ class GameBoard(object):
         self.fonts = {
             "large": pygame.font.SysFont("arial", 64),
             "normal": pygame.font.SysFont("arial", 28),
-            "small": pygame.font.SysFont("courier new", 12),
+            "small": pygame.font.SysFont("courier new", 12, bold=True),
         }
         self.score = Keeper()
         self.lines = 0
@@ -58,59 +53,54 @@ class GameBoard(object):
             font object to blit somewhere
         """
 
-        return self.fonts[font].render(text, True, color or (255, 255, 255),
-                                       background)
+        white = (255, 255, 255)
+        if background:
+            # yay bugs from 2011 http://bit.ly/1Kf0HPl
+            return self.fonts[font].render(
+                text,
+                True,
+                color or white,
+                background,
+            )
+        else:
+            return self.fonts[font].render(text, True, color or white)
 
-    def refresh_background(self, dt):
+    def refresh_background(self, dt, background):
         """Called per clock cycle, updates all graphics."""
 
-        self.screen.fill((111, 111, 111))  # TODO: make better
-
-        area_border_color = (200, 200, 200)  # TODO: make better
+        self.screen.blit(background, (0, 0))
 
         # hold area
         hold_font = self.render("Hold")
         hold_size = self.fonts["normal"].size("Hold")
-        hold_top  = self.vertical_offset - (self.blocksize * 2.5)
-        hold_left = self.centre_px - ((self.width + 2.5) * self.blocksize)
+        hold_left = self.centre_px - (((self.width / 2) + 4) * self.blocksize)
+
         self.screen.blit(hold_font, (
-            hold_left + (((self.blocksize * 6) - hold_size[0]) / 2),
-            self.vertical_offset - (self.blocksize * 2.5) - hold_size[1],
+            hold_left - (hold_size[0] / 2),
+            self.vertical_offset - hold_size[1],
         ))
-        pygame.draw.rect(
-            self.screen,
-            area_border_color,
-            (hold_left, hold_top, self.blocksize * 6, self.blocksize * 6),
-            self.blocksize // 6,  # border thickness
-        )
 
         if self.nexts > 1:
             # next area
             next_font = self.render("Next")
             next_size = self.fonts["normal"].size("Next")
-            next_left = self.centre_px + ((self.width - 3.5) * self.blocksize)
-            self.screen.blit(next_font, (
-                next_left + (((self.blocksize * 6) - next_size[0]) / 2),
-                self.vertical_offset - (self.blocksize * 2.5) - next_size[1],
-            ))
-            pygame.draw.rect(
-                self.screen,
-                area_border_color,
-                (
-                    next_left,
-                    hold_top,
-                    self.blocksize * 6,
-                    self.nexts * self.blocksize * 3,
-                ),
-                self.blocksize // 6,
+            next_left = self.centre_px + (
+                ((self.width // 2) + 1.75) * self.blocksize
             )
+            self.screen.blit(next_font, (
+                next_left + (next_size[0] // 2),
+                self.vertical_offset - next_size[1],
+            ))
 
-        # game area fill
-        self.screen.fill((90, 90, 90), (
+        # semi-transparent game board background
+        board_bg = pygame.Surface(
+            (self.width * self.blocksize, (self.height - 2) * self.blocksize),
+            flags=pygame.SRCALPHA,
+        )
+        board_bg.fill((0, 0, 0, 150))
+        self.screen.blit(board_bg, (
             self.centre_px - ((self.width // 2) * self.blocksize),
             self.vertical_offset + self.blocksize,
-            self.width * self.blocksize,
-            (self.height - 2) * self.blocksize,
         ))
 
         # go through the game sprites and update/reblit them if visible
@@ -121,55 +111,71 @@ class GameBoard(object):
 
         # grab some current game stats
         stats = [
-            self.render("level: {}".format(self.fallrate)),
-            self.render("lines: {:,}".format(self.lines)),
-            self.render("game: {:,}".format(int(self.score.game))),
+            self.render("level: {}".format(self.fallrate), "small"),
+            self.render("lines: {:,}".format(self.lines), "small"),
+            self.render("game: {:,}".format(int(self.score.game)), "small"),
         ]
 
         if self.score.total:  # only after the first loss
-            stats.append(self.render("total: {:,}".format(self.score.total)))
+            stats.append(
+                self.render("total: {:,}".format(self.score.total), "small")
+            )
 
         if self.score.best != self.score.total:  # after 2nd loss
             stats.append(self.render(
-                "best: {:,}".format(int(self.score.best))
+                "best: {:,}".format(int(self.score.best)), "small"
             ))
 
         if self.bonus_blocks:  # once they get 100k points, point val of bonus
             stats.append(self.render("bonus: {:,}".format(sum([
-                block["sprite"].bonus_points for coord in self.bonus_blocks \
-                    for block in self.blocks if block["coord"] == coord
-            ]))))
+                block["sprite"].bonus_points for coord in self.bonus_blocks
+                for block in self.blocks if block["coord"] == coord
+            ])), "small"))
         elif self.bonus_block_rate:
             stats.append(self.render(
-                "{} complete!".format(self.bonus_block_rate)
+                "{} complete!".format(self.bonus_block_rate), "small"
             ))
         elif self.score.game.get_score() > 100000:
-            stats.append(self.render("!"))  # just a small notification ...
+            stats.append(self.render("!", "small"))
 
-        if self.show_shape_spawn_rate:  # debug/info option
+        stat_bar = pygame.Surface((self.resolution[0], 20))
+        img = load_image("banner.png")
+        banner = pygame.transform.scale(img, (self.resolution[0], 20))
+        stat_bar.blit(banner, (0, 0))
+        gap = self.resolution[0] // len(stats)
+
+        for i, stat in enumerate(stats):
+            stat_bar.blit(stat, (
+                (gap * i) + (gap // 2) - (stat.get_size()[0] // 2),
+                2,
+            ))
+
+        self.screen.blit(stat_bar, (0, 0))
+
+        if self.spawn_rate:  # debug/info option
+            stats = []
             shapes_spawned = sum(self.history.values())
-            shape_spawn_rate = lambda x : self.history[x] / shapes_spawned
+            shape_spawn_rate = lambda x: self.history[x] / shapes_spawned
             stats.append(self.render(""))  # spacer
             stats.extend([self.render("{}: {:.2%}".format(
                 Shapes.all_types[shape].title(),
                 shape_spawn_rate(shape)
             )) for shape in self.history])
 
-        for i, stat in enumerate(stats):  # draw the rendered fonts on screen
-            self.screen.blit(stat, (60, 30 + (i * 30)))
+            for i, stat in enumerate(stats):  # draw the rendered fonts
+                self.screen.blit(stat, (10, 240 + (i * 30)))
 
-        name_and_stats = (
-            "The Tragedy of the Falling Sky v{} | {:.2f} fps | {:,} sprites"
-        ).format(
-            __version__,
-            self.clock.get_fps(),
-            len(self.sprites),
-        )
-        name_and_stats_size = self.fonts["small"].size(name_and_stats)
+        name_stats = "The Tragedy of the Falling Sky v{}".format(__version__)
+        if self.spawn_rate:  # debug/info option
+            name_stats += " | {:.2f} fps | {:,} sprites".format(
+                self.clock.get_fps(),
+                len(self.sprites),
+            )
+        name_stats_size = self.fonts["small"].size(name_stats)
 
         self.screen.blit(
-            self.render(name_and_stats, font="small", color=(0, 0, 0)),
-            (5, self.resolution[1] - name_and_stats_size[1]),
+            self.render(name_stats, font="small"),
+            (5, self.resolution[1] - name_stats_size[1]),
         )
 
         # let the user know if we're paused
@@ -284,11 +290,11 @@ class GameBoard(object):
         for line in destroyed_lines:
             for block in self.blocks:
                 if block["sprite"] is not None and \
-                       not block["sprite"].bonus_points and \
-                       block["coord"].y < line and \
-                       not (block["coord"].x in column_stops and \
-                            block["coord"].y < column_stops[block["coord"].x] \
-                            and line >= column_stops[block["coord"].x]):
+                   not block["sprite"].bonus_points and \
+                   block["coord"].y < line and \
+                   not (block["coord"].x in column_stops and
+                   block["coord"].y < column_stops[block["coord"].x] and
+                   line >= column_stops[block["coord"].x]):
                     # if block is not a wall, not a bonus block, above the line
                     # that exploded, and/or if it's in a column with a bonus
                     # block beneath it, and the line exploded above the bonus
@@ -323,16 +329,16 @@ class GameBoard(object):
         # the standard deviation length is at a ratio of 1:7 of the max height
         std = max_spawn_height // 7
 
-        rows_above = lambda x : list(range(
+        rows_above = lambda x: list(range(
             max(mean - (std * x), 0),
             max(mean - (std * (x - 1)), 0)
         ))
-        rows_below = lambda x : list(range(
+        rows_below = lambda x: list(range(
             min(mean + (std * x) - std, max_spawn_height),
             min(mean + (std * (x + 1)) - std, max_spawn_height)
         ))
         Rows = namedtuple("Rows", ("above", "below"))
-        row_range = lambda x : Rows(below=rows_below(x), above=rows_above(x))
+        row_range = lambda x: Rows(below=rows_below(x), above=rows_above(x))
         # HACK: using the key names sorted here, don't change odds' keys ;)
         rows = {key: row_range(i) for i, key in enumerate(sorted(odds), 1)}
 
@@ -341,8 +347,8 @@ class GameBoard(object):
 
         # track each column in each row for spawning inside of
         row_columns = {
-            row: list(range(-int(self.width / 2), int(self.width / 2))) for \
-                row in range(max_spawn_height)
+            row: list(range(-int(self.width / 2), int(self.width / 2))) for
+            row in range(max_spawn_height)
         }
 
         for _ in range(self.bonus_block_rate):
@@ -352,34 +358,34 @@ class GameBoard(object):
                 # roll and determine the odds section it landed in
                 roll = random.randint(0, 1000)
                 if roll < odds["sml"] * 2:
-                    section = "sml"
+                    area = "sml"
                     if range_distribution["sml"] and rolls_so_far < 10:
                         continue  # getting this way too often, shortcut
                 elif roll < odds["mid"] * 2:
-                    section = "mid"
+                    area = "mid"
                 else:
-                    section = "big"
+                    area = "big"
 
                 # apply some logic to smooth out the distribution
-                if rolls_so_far > 2 and range_distribution[section] and \
-                        range_distribution[section] / (rolls_so_far + 1) > \
-                        ((odds[section] + ((1/5) * odds[section])) * 2) / 1000:
+                if rolls_so_far > 2 and range_distribution[area] and \
+                        range_distribution[area] / (rolls_so_far + 1) > \
+                        ((odds[area] + ((1 / 5) * odds[area])) * 2) / 1000:
                     continue
                 else:
                     break
 
-            range_distribution[section] += 1
+            range_distribution[area] += 1
 
             above = random.randint(0, 1)
 
             # move above/below into the lesser populated area
-            dist = row_distribution[section]
+            dist = row_distribution[area]
             if (dist["above"] and above and dist["above"] > dist["below"]) or \
                (dist["below"] and not above and dist["below"] > dist["above"]):
                 above = 0 if above else 1
 
             def available_rows():
-                return [row for row in rows[section][above] if \
+                return [row for row in rows[area][above] if
                         row_spawns[row] < self.width - 1]
 
             this_row = None
@@ -399,16 +405,18 @@ class GameBoard(object):
                 row_spawns[this_row] += 1
 
             if above:
-                row_distribution[section]["above"] += 1
+                row_distribution[area]["above"] += 1
             else:
-                row_distribution[section]["below"] += 1
+                row_distribution[area]["below"] += 1
 
             column = random.sample(row_columns[this_row], 1)[0]
             row_columns[this_row].remove(column)
             level = random.randint(3, 5)
             location = Coord(
                 self.centre_px + (column * self.blocksize),
-                self.vertical_offset + ((self.height - this_row - 3) * self.blocksize)
+                self.vertical_offset + (
+                    (self.height - this_row - 3) * self.blocksize
+                )
             )
             self.spawn_bonus_block(location, level)
 
@@ -501,7 +509,7 @@ class GameBoard(object):
         self.clock = pygame.time.Clock()
 
         # TODO: make a real background
-        # background = load_image("background.png")
+        background = load_image("background.png")
 
         self.screen = screen
         self.resolution = menu.resolution
@@ -523,18 +531,17 @@ class GameBoard(object):
 
         # "features"
         self.nexts = menu.data["nexts"] + 1  # plus 1 because of range usage
-        self.show_shape_spawn_rate = menu.data["show_shape_spawn_rate"]
+        self.spawn_rate = menu.data["spawn_rate"]
 
         # do geometry, generate the xml map
         self.centre_px = int(
             ((self.resolution[0] / self.blocksize) / 2) * self.blocksize
         )
-        self.vertical_offset = int(
-            ((self.resolution[1] // self.blocksize) - self.height) * self.blocksize
-        )
+        self.vertical_offset = int(((self.resolution[1] // self.blocksize) -
+                                   self.height) * self.blocksize)
         self.walls, self.wall_coords = arcade_mode(
             resolution=self.resolution,
-            blocksize = self.blocksize,
+            blocksize=self.blocksize,
             width=self.width,
             height=self.height,
         )
@@ -562,7 +569,7 @@ class GameBoard(object):
         swapped_shape = None
         # TODO: move these constants somewhere common
         self.max_level = 21
-        self.lines_per_level = 8 # 16  # XXX
+        self.lines_per_level = 16
         self.lines_until_speed_up = self.lines_per_level
         slam_delay = 200
         slam_available = slam_delay
@@ -630,7 +637,7 @@ class GameBoard(object):
                     for block in swapped_shape.blocks:
                         block.explode(self)
                     del swapped_shape
-                    swapped_shape = None
+                    swapped_shape = None  # nopep8
                 slam_available = slam_delay
                 swap_available = swap_delay
                 continue
@@ -646,7 +653,7 @@ class GameBoard(object):
                 slam_available = slam_delay
                 swap_available = swap_delay
 
-            self.refresh_background(dt) #, background)
+            self.refresh_background(dt, background)
 
 
 class SoundEffects(object):

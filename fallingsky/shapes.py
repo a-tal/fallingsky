@@ -6,7 +6,6 @@ Movement handling to the child blocks happens here.
 
 from __future__ import division
 
-import sys
 import pygame
 import random
 
@@ -64,7 +63,7 @@ class Shape(object):
 
         bs = game.blocksize
         offset_coords = {
-            "l": [(-(bs * 2), 0), (-bs, 0), (0, 0), (0, -bs)],
+            "l": [(-bs, 0), (0, 0), (bs, 0), (bs, -bs)],
             "j": [(-bs, -bs), (-bs, 0), (0, 0), (bs, 0)],
             "s": [(bs, -bs), (0, -bs), (0, 0), (-bs, 0)],
             "z": [(-bs, -bs), (0, -bs), (0, 0), (bs, 0)],
@@ -74,7 +73,8 @@ class Shape(object):
         }
 
         self.offset_coords = offset_coords[self.shape_name]
-        self.vertical_offset = game.vertical_offset
+        self.initial_offset = self.offset_coords
+        self.vertical_offset = game.vertical_offset + (game.blocksize * 2)
         self.exploding = False
         self.falling = True
         self.fall_rate = max(1100 - (game.fallrate * 50), 65)
@@ -181,8 +181,9 @@ class Shape(object):
     def become_held(self, game):
         """Move this shape to the hold area."""
 
+        self.offset_coords = self.initial_offset
         block_positions = []
-        right_shift = (((game.width // 2) + 5) * game.blocksize)
+        right_shift = (((game.width // 2) + 4) * game.blocksize)
         for block_offset in self.offset_coords:
             location = (
                 game.centre_px + block_offset[0] - right_shift,
@@ -328,7 +329,8 @@ class Shape(object):
         # we may be unable to move downwards, when slamming while losing
         for block in self.blocks:
             coords = Coord(block.rect.x, block.rect.y)
-            if self._move_coords(game, coords, game_coords, down=True) == coords:
+            new_coord = self._move_coords(game, coords, game_coords, down=True)
+            if new_coord == coords:
                 # we're done moving, make us colliadable
                 desired_coords = None
                 break
@@ -481,7 +483,8 @@ class Shape(object):
             self.next_move = self.move_rate
 
         # rotate, both directions
-        elif key in (pygame.K_UP, pygame.K_e, pygame.K_w) and self.next_turn <= 0:
+        elif key in (pygame.K_UP, pygame.K_e, pygame.K_w) and \
+                self.next_turn <= 0:
             self._rotate_blocks(game)
             self.next_turn = self.turn_rate
         elif key in (pygame.K_q,) and self.next_turn <= 0:
@@ -492,12 +495,12 @@ class Shape(object):
 def not_so_random_shape(game):
     """Used to determine the next shape ID. Tries to weigh the odds evenly."""
 
-    roll_for_shape = lambda : random.sample(game.history.keys(), 1)[0]
+    roll_for_shape = lambda: random.sample(game.history.keys(), 1)[0]
     shape_id = roll_for_shape()
     shapes_spawned = sum(game.history.values())
 
     if shapes_spawned > 4:
-        shape_spawn_rate = lambda x : game.history[x] / shapes_spawned
+        shape_spawn_rate = lambda x: game.history[x] / shapes_spawned
         while shape_spawn_rate(shape_id) > 1 / (len(game.history) - 1):
             shape_id = roll_for_shape()
 

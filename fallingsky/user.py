@@ -12,7 +12,7 @@ import appdirs
 
 _PATH = os.path.join(appdirs.user_data_dir(), "Falling Sky")
 _EXT = "{}json".format(os.extsep)
-_USER_PATH = lambda u : os.path.join(_PATH, "{}{}".format(u, _EXT))
+_USER_PATH = lambda u: os.path.join(_PATH, "{}{}".format(u, _EXT))
 
 
 def get_users():
@@ -27,7 +27,7 @@ def get_users():
         else:
             raise
     else:
-        return [os.path.splitext(u)[0] for u in users if \
+        return [os.path.splitext(u)[0] for u in users if
                 os.path.splitext(u)[1] == _EXT]
 
 
@@ -66,10 +66,10 @@ class UserData(object):
             "total_score": 0,
             "best_score": 0,
             "nexts": 4,
-            "blocksize": 4,  # this is multiplied by 4 to ensure proper centres
+            "blocksize": 6,  # this is multiplied by 4 to ensure proper centres
             "fallrate": 1,
             "bonus_block_rate": 0,
-            "show_shape_spawn_rate": False,
+            "spawn_rate": False,
         }
         self.data = self._sanity_check(self._fetch())
 
@@ -77,11 +77,11 @@ class UserData(object):
         """Ensure the values are sane and no extra keys are present."""
 
         limits = {
-            "blocksize": lambda x : max(min(x // 2 * 2, 32), 1),
-            "nexts": lambda x : max(min(x, 8), 0),
-            "height": lambda x : max(min(x, 199), 10),
-            "width": lambda x : max(min(x, 299), 6),
-            "fallrate": lambda x : max(min(x, 21), 1),
+            "blocksize": lambda x: max(min(x // 2 * 2, 32), 1),
+            "nexts": lambda x: max(min(x, 8), 0),
+            "height": lambda x: max(min(x, 199), 10),
+            "width": lambda x: max(min(x, 299), 6),
+            "fallrate": lambda x: max(min(x, 21), 1),
             "bonus_block_rate": lambda x: max(min(x, 50), 0),
         }
 
@@ -133,6 +133,9 @@ class UserData(object):
         """Returns Dict.__contains__ on self.data."""
 
         return key in self.data
+
+    def keys(self):
+        return self.data.keys()
 
     def get(self, item, default=None):
         """Returns Dict.get on self.data."""

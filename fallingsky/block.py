@@ -11,7 +11,6 @@ import pygame
 import struct
 from collections import namedtuple
 
-from fallingsky.score import Keeper
 from fallingsky.util import Coord
 
 
@@ -19,16 +18,16 @@ class Blocks(object):
     rgba_codes = {  # name: (R, G, B, A)
         "black": (0, 0, 0, 255),
         "blue": (0, 87, 132, 255),
-        "bonus_blue": (13, 27, 209, 180),
-        "bonus_blue_alpha": (13, 27, 209, 80),
-        "bonus_green": (56, 241, 6, 180),
-        "bonus_green_alpha": (56, 241, 6, 80),
-        "bonus_orange": (240, 120, 6, 180),
-        "bonus_orange_alpha": (240, 120, 6, 80),
-        "bonus_pink": (215, 8, 205, 180),
-        "bonus_pink_alpha": (215, 8, 205, 80),
-        "bonus_yellow": (214, 216, 8, 180),
-        "bonus_yellow_alpha": (214, 216, 8, 80),
+        "bonus_blue": (13, 27, 209, 230),
+        "bonus_blue_alpha": (13, 27, 209, 180),
+        "bonus_green": (56, 241, 6, 230),
+        "bonus_green_alpha": (56, 241, 6, 180),
+        "bonus_orange": (240, 120, 6, 230),
+        "bonus_orange_alpha": (240, 120, 6, 180),
+        "bonus_pink": (215, 8, 205, 230),
+        "bonus_pink_alpha": (215, 8, 205, 180),
+        "bonus_yellow": (214, 216, 8, 230),
+        "bonus_yellow_alpha": (214, 216, 8, 180),
         "brown": (73, 60, 43, 255),
         "dark_orange": (164, 100, 34, 255),
         "dark_pink": (208, 60, 94, 255),
@@ -55,11 +54,11 @@ class Blocks(object):
         "bonus_3": Color("bonus_orange", "bonus_orange_alpha"),
         "bonus_4": Color("bonus_blue", "bonus_blue_alpha"),
         "bonus_5": Color("bonus_pink", "bonus_pink_alpha"),
-        "i": Color("blue", "light_blue"),
+        "i": Color("light_blue", "blue"),
         "j": Color("pink", "dark_pink"),
-        "l": Color("red", "light_red"),
-        "o": Color("dark_orange", "orange"),
-        "s": Color("green", "light_green"),
+        "l": Color("light_red", "red"),
+        "o": Color("orange", "dark_orange"),
+        "s": Color("light_green", "green"),
         "shadow": Color("ghost", "ghost_darker"),
         "t": Color("purple", "dark_purple"),
         "wall": Color("brown", "black"),
@@ -100,7 +99,7 @@ class Blocks(object):
         """Generates the image string for the block to then cache."""
 
         # packs a single pixel as a string by color name
-        pixel = lambda x : struct.pack("4B", *Blocks.rgba_codes[x])
+        pixel = lambda x: struct.pack("4B", *Blocks.rgba_codes[x])
 
         main_color = Blocks.colors[block].main
         border_color = Blocks.colors[block].border

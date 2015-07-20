@@ -1,19 +1,50 @@
 language: python
 
 python:
-  - '2.7'
-  - '3.4'
+  - "3.4"
+
+env:
+  - TOXENV=py27
+  - TOXENV=py34
+  - TOXENV=pep8
 
 before_install:
-  - pip install --upgrade coveralls pip
+  - pip install --upgrade coveralls pip pytest pytest-cov tox
   - sudo apt-get install -y mercurial
   - sudo apt-get build-dep -y pygame
   - yes | pip install -vvv hg+http://bitbucket.org/pygame/pygame
 
-script: "python setup.py test"
+script:
+  - tox
 
 after_success:
   - coveralls
+
+before_deploy:
+  - python setup.py build sdist bdist_wheel
+  - if [ "x" == "$(grep $(git tag -l --points-at=HEAD) fallingsky/__init__.py)x" ]; then echo 'new tag does not exist in fallingsky/__init__.py; bailing!'; exit 1; else echo "tag found in fallingsky/__init__.py"; fi
+
+deploy:
+  - provider: pypi
+    user: atal
+    skip_cleanup: true
+    distributions: "sdist bdist_wheel"
+    password:
+      secure: "YzVd+tn2+Ihkd7YAxwd2zNipGys11LkTaE8RItXY4nHWUDB/Ebd9ioV05ppNFkp5RzkMZJCb3rSSaa3WvMzVZb03358C4czp3tOFOYn5EwwhJ0cc5dIaiIJl6Jwrpi7M0ucGeeIMtRVKRuF/AZOUIzfYSsVEAdhHFwT/4v4TAag="
+    on:
+      tags: true
+      repo: a-tal/fallingsky
+      condition: $TOXENV = py34
+
+  - provider: releases
+    api_key:
+      secure: "CO7tmltZgxMeVk0NRDTzGCxAtGzfvmAuswaALxsK0yUc859Genhi+c3pbfTz+oVwV6s9DSq3IfmwygndQzdutz8d+wdRdMs6hLpHnpmlWn4I201GcOVTXwUVy/zQVijiFHQyEM9TygXkf+0MihaLJDkG6ANf45LwN2ckAG8Lzh4="
+    file: "/home/travis/build/a-tal/fallingsky/dist/*.whl"
+    file_glob: true
+    skip_cleanup: true
+    on:
+      tags: true
+      condition: $TOXENV = py34
 
 notifications:
   irc:

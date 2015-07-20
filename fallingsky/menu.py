@@ -8,11 +8,13 @@ import os
 import pygame
 from kezmenu3 import KezMenu
 
+from fallingsky import __version__
+from fallingsky.block import Blocks
 from fallingsky.game import GameBoard
 from fallingsky.user import get_users
 from fallingsky.user import UserData
 from fallingsky.user import reset_users
-# from fallingsky.util import load_image
+from fallingsky.util import load_image
 
 
 class MainMenu(object):
@@ -28,10 +30,13 @@ class MainMenu(object):
         self.updating_name = False
         self.help = False
         self.buffer = 5  # px
-        self.font = pygame.font.SysFont("arial", 20)
+        self.font = pygame.font.SysFont("arial", 20, bold=True)
+        self.small_title = pygame.font.SysFont("arial", 24, bold=True)
+        self.big_title = pygame.font.SysFont("arial", 108)
         self.magic_sequence = [273, 273, 274, 274, 276, 275, 276, 275, 98, 97]
         self.magic_available = ["width", "height", "nexts", "blocksize",
-            "fallrate", "bonus_block_rate", "show_shape_spawn_rate"]
+                                "fallrate", "bonus_block_rate",
+                                "spawn_rate"]
         self.magic_enabled = []
         self.magic = []
         self.magical = False
@@ -48,8 +53,10 @@ class MainMenu(object):
 
         # start the screen object
         screen = pygame.display.set_mode(self.resolution)
+        pygame.display.set_caption("The Tragedy of the Falling Sky v{}".format(
+            __version__
+        ))
         clock = pygame.time.Clock()
-        # background = load_image("background.png")
 
         users = get_users()
         if len(users) == 1:
@@ -60,7 +67,7 @@ class MainMenu(object):
         self.menu = KezMenu(
             ["Arcade Mode", lambda: GameBoard().main(screen, self)],
             [self.player_name, self.update_player_name],
-            ["Controls", lambda : setattr(self, "help", not self.help)],
+            ["Controls", lambda: setattr(self, "help", not self.help)],
             ["Reset Scores", self.reset_scores],
             ["Quit", lambda: setattr(self, 'running', False)],
         )
@@ -69,11 +76,14 @@ class MainMenu(object):
         #       what their upper limits are, rename them, cheat, etc...
         PLAYER_INDEX = 1  # index of the player's name
 
-        self.menu.x = self.resolution[0] // 3
+        self.menu.x = self.resolution[0] // 2.5
         self.menu.y = self.resolution[1] // 2
-        # self.menu.enableEffect('raise-col-padding-on-focus', enlarge_time=0.1)
+        self.menu.color = Blocks.rgba_codes["light_blue"]
+        self.menu.focus_color = Blocks.rgba_codes["dark_pink"]
 
-        render = lambda x : self.font.render(x, True, (222, 222, 222))
+        background = load_image("background.png")
+        render = lambda x: self.font.render(x, True, self.menu.color)
+        render_red = lambda x: self.font.render(x, True, self.menu.focus_color)
 
         while self.running:
             events = pygame.event.get()
@@ -92,8 +102,19 @@ class MainMenu(object):
 
             self.handle_magic(events)
             self.menu.update(events or [], clock.tick(30) / 1000.0)
-            screen.fill((99, 99, 99))  # TODO: make better
-            # screen.blit(background, (0, 0))
+            screen.blit(background, (0, 0))
+
+            # title text
+            small = self.small_title.render("the tragedy of the", True,
+                                            Blocks.rgba_codes["dark_pink"])
+            small_size = self.small_title.size("the tragedy of the")
+            screen.blit(small,
+                        (self.resolution[0] // 2 - (small_size[0] // 2), 120))
+            big = self.big_title.render("FALLING SKY", True,
+                                        Blocks.rgba_codes["teal"])
+            big_size = self.big_title.size("FALLING SKY")
+            screen.blit(big,
+                        (self.resolution[0] // 2 - (big_size[0] // 2), 150))
 
             if self.help:
                 # add controls/help to bottom
@@ -110,20 +131,41 @@ class MainMenu(object):
                 ]
 
                 # get the largest possible control label size
-                control_size = self.font.size(max(controls, key=len))
+                control_size = (0, 0)
+                for control in controls:
+                    size = self.font.size(control)
+                    if size[0] > control_size[0]:
+                        control_size = size
 
-                  # px buffer
+                help_bg = pygame.Surface(
+                    (
+                        control_size[0] + 10,
+                        ((control_size[1] + self.buffer) * (len(controls))
+                         ) + 10,
+                    ),
+                    flags=pygame.SRCALPHA,
+                )
+                help_bg.fill((0, 0, 0, 150))
+                screen.blit(help_bg, (
+                    25,
+                    self.resolution[1] - (
+                        (control_size[1] + self.buffer) * (len(controls))
+                    ) + 5
+                ))
+
                 for i, control in enumerate(controls):
-                    screen.blit(render(control), (
-                        self.resolution[0] - (control_size[0] + self.buffer),
+                    screen.blit(render_red(control), (
+                        30,
                         self.resolution[1] - (
-                            (control_size[1] * len(controls)) -
+                            (control_size[1] * (len(controls) + 1)) -
                             (i * control_size[1]) + self.buffer
                         )
                     ))
 
             if self.data["wins"] or self.data["losses"]:
-                label = "wins: {wins} losses: {losses}".format(**self.data.data)
+                label = "{user_id} wins: {wins} losses: {losses}".format(
+                    **self.data
+                )
                 win_loss = render(label)
                 win_loss_size = self.font.size(label)
                 screen.blit(win_loss, (
@@ -168,7 +210,7 @@ class MainMenu(object):
                         if event.key not in range(273, 277):
                             scrubbed_events.append(event)
                     else:
-                        if pygame.key.get_mods() in (1, 8192):
+                        if pygame.key.get_mods() in (1, 4097, 8192, 12288):
                             # checks for shift or caps lock, and both
                             key = key.capitalize()
                         keylist += key
@@ -237,8 +279,9 @@ class MainMenu(object):
             self.data.save()
             self.magic_enabled = []
 
-    def _magic_show_shape_spawn_rate(self):
-        self.data["show_shape_spawn_rate"] = not self.data["show_shape_spawn_rate"]
+    def _magic_spawn_rate(self):
+        key = "spawn_rate"
+        self.data[key] = not self.data[key]
         self.data.save()
 
     def _magic_method(self):
@@ -265,7 +308,9 @@ class MainMenu(object):
             if e.type == 2:
                 self.magic.append(e.key)
                 for i, q in zip(self.magic, self.magic_sequence):
-                    if i != q: self.magic = []; break
+                    if i != q:
+                        self.magic = []
+                        break
                 else:
                     if len(self.magic) == len(self.magic_sequence):
                         self.magical = True
