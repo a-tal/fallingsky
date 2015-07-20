@@ -31,7 +31,7 @@ deploy:
     on:
       tags: true
       repo: a-tal/fallingsky
-      condition: $TOXENV = py34
+      condition: $TRAVIS_PYTHON_VERSION = "3.4"
 
   - provider: releases
     api_key:
@@ -41,7 +41,7 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-      condition: $TOXENV = py34
+      condition: $TRAVIS_PYTHON_VERSION = "3.4"
 
 notifications:
   irc:
