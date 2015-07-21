@@ -82,6 +82,7 @@ class MainMenu(object):
         self.menu.focus_color = Blocks.rgba_codes["dark_pink"]
 
         background = load_image("background.png")
+        background = pygame.transform.scale(background, self.resolution)
         render = lambda x: self.font.render(x, True, self.menu.color)
         render_red = lambda x: self.font.render(x, True, self.menu.focus_color)
 
@@ -104,15 +105,45 @@ class MainMenu(object):
             self.menu.update(events or [], clock.tick(30) / 1000.0)
             screen.blit(background, (0, 0))
 
+            # drop shadow behind options list
+            max_width = 0
+            height = 0
+            for option in self.menu.options:
+                font = option.get("font", self.menu._font)
+                size = font.size(option["label"])
+                max_width = max(max_width, size[0])
+                height += size[1]
+
+            options_bg = pygame.Surface(
+                (max_width + 10, height + 10),
+                flags=pygame.SRCALPHA,
+            )
+            options_bg.fill((0, 0, 0, 150))
+            screen.blit(options_bg, (
+                self.menu.x - 5,
+                self.menu.y - 5,
+            ))
+
             # title text
             small = self.small_title.render("the tragedy of the", True,
                                             Blocks.rgba_codes["dark_pink"])
             small_size = self.small_title.size("the tragedy of the")
-            screen.blit(small,
-                        (self.resolution[0] // 2 - (small_size[0] // 2), 120))
             big = self.big_title.render("FALLING SKY", True,
                                         Blocks.rgba_codes["teal"])
             big_size = self.big_title.size("FALLING SKY")
+
+            title_bg = pygame.Surface(
+                (big_size[0] + 10, big_size[1] + small_size[1] + 10),
+                flags=pygame.SRCALPHA,
+            )
+            title_bg.fill((0, 0, 0, 150))
+            screen.blit(title_bg, (
+                (self.resolution[0] // 2) - (big_size[0] // 2) - 5,
+                115,
+            ))
+
+            screen.blit(small,
+                        (self.resolution[0] // 2 - (small_size[0] // 2), 120))
             screen.blit(big,
                         (self.resolution[0] // 2 - (big_size[0] // 2), 150))
 
@@ -168,6 +199,17 @@ class MainMenu(object):
                 )
                 win_loss = render(label)
                 win_loss_size = self.font.size(label)
+
+                win_loss_bg = pygame.Surface(
+                    (win_loss_size[0] + 10, win_loss_size[1] + 10),
+                    flags=pygame.SRCALPHA,
+                )
+                win_loss_bg.fill((0, 0, 0, 150))
+                screen.blit(win_loss_bg, (
+                    (self.resolution[0] / 2) - (win_loss_size[0] / 2) - 5,
+                    0,
+                ))
+
                 screen.blit(win_loss, (
                     (self.resolution[0] / 2) - (win_loss_size[0] / 2),
                     self.buffer,

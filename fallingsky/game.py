@@ -74,7 +74,15 @@ class GameBoard(object):
         hold_font = self.render("Hold")
         hold_size = self.fonts["normal"].size("Hold")
         hold_left = self.centre_px - (((self.width / 2) + 4) * self.blocksize)
-
+        hold_bg = pygame.Surface(
+            (hold_size[0] + 10, hold_size[1] + 10),
+            flags=pygame.SRCALPHA,
+        )
+        hold_bg.fill((0, 0, 0, 150))
+        self.screen.blit(hold_bg, (
+            hold_left - (hold_size[0] // 2) - 5,
+            self.vertical_offset - hold_size[1] - 5,
+        ))
         self.screen.blit(hold_font, (
             hold_left - (hold_size[0] / 2),
             self.vertical_offset - hold_size[1],
@@ -87,6 +95,15 @@ class GameBoard(object):
             next_left = self.centre_px + (
                 ((self.width // 2) + 1.75) * self.blocksize
             )
+            next_bg = pygame.Surface(
+                (next_size[0] + 10, next_size[1] + 10),
+                flags=pygame.SRCALPHA,
+            )
+            next_bg.fill((0, 0, 0, 150))
+            self.screen.blit(next_bg, (
+                next_left + (next_size[0] // 2) - 5,
+                self.vertical_offset - next_size[1] - 5,
+            ))
             self.screen.blit(next_font, (
                 next_left + (next_size[0] // 2),
                 self.vertical_offset - next_size[1],
@@ -165,18 +182,21 @@ class GameBoard(object):
             for i, stat in enumerate(stats):  # draw the rendered fonts
                 self.screen.blit(stat, (10, 240 + (i * 30)))
 
-        name_stats = "The Tragedy of the Falling Sky v{}".format(__version__)
         if self.spawn_rate:  # debug/info option
-            name_stats += " | {:.2f} fps | {:,} sprites".format(
+            name_stats = (
+                "The Tragedy of the Falling Sky v{} | "
+                "{:.2f} fps | {:,} sprites"
+            ).format(
+                __version__,
                 self.clock.get_fps(),
                 len(self.sprites),
             )
-        name_stats_size = self.fonts["small"].size(name_stats)
 
-        self.screen.blit(
-            self.render(name_stats, font="small"),
-            (5, self.resolution[1] - name_stats_size[1]),
-        )
+            name_stats_size = self.fonts["small"].size(name_stats)
+            self.screen.blit(
+                self.render(name_stats, font="small"),
+                (5, self.resolution[1] - name_stats_size[1]),
+            )
 
         # let the user know if we're paused
         if self.paused:
@@ -508,12 +528,12 @@ class GameBoard(object):
         # grab a clock so we can limit and measure the passing of time
         self.clock = pygame.time.Clock()
 
-        # TODO: make a real background
-        background = load_image("background.png")
-
         self.screen = screen
         self.resolution = menu.resolution
         self.blocksize = min(menu.data["blocksize"], 12) * 4
+
+        background = load_image("background.png")
+        background = pygame.transform.scale(background, self.resolution)
 
         # board size
         max_width = int(menu.resolution[0] / self.blocksize) - 10
