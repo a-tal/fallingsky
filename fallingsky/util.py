@@ -2,6 +2,7 @@
 
 
 import os
+import sys
 import pygame
 from collections import namedtuple
 
@@ -12,7 +13,10 @@ Coord = namedtuple("Coord", ("x", "y"))
 def _here():
     """Returns the current full directory path."""
 
-    return os.path.dirname(os.path.realpath(__file__))
+    if hasattr(sys, "_MEIPASS"):  # pyinstaller deployed
+        return os.path.join(sys._MEIPASS)
+    else:
+        return os.path.dirname(os.path.realpath(__file__))
 
 
 def load_image(image_name):

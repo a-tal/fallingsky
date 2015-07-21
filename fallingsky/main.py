@@ -2,7 +2,9 @@
 
 
 import pygame
+import traceback
 
+from fallingsky import __version__
 from fallingsky.menu import MainMenu
 from fallingsky.game import GameBoard
 from fallingsky.util import Coord
@@ -15,12 +17,21 @@ STANDARD_RESOLUTION = Coord(960, 640)
 def play():
     """Main access point, plays game through the main menu."""
 
-    pygame.init()
-    menu = MainMenu(STANDARD_RESOLUTION)
     try:
+        pygame.init()
+        menu = MainMenu(STANDARD_RESOLUTION)
         menu.run_forever()
     except KeyboardInterrupt:
         raise SystemExit("Interrupted")
+    except Exception as error:
+        raise SystemExit(
+            "Falling Sky {} encountered an error:\n\n{}\n"
+            "If you want, copy/paste the above and make a new issue at\n"
+            "https://github.com/a-tal/fallingsky/issues/".format(
+                __version__,
+                traceback.format_exc(error),
+            )
+        )
 
 
 def play_hack():
@@ -47,6 +58,7 @@ def play_hack():
             self.losses = 0
             self.wins = 0
 
+    pygame.init()
     # uncomment the next two lines if you want every shape to be a line
     # from fallingsky import shapes
     # shapes.IMADEVELOPER = True
@@ -58,6 +70,5 @@ def play_hack():
 
 
 if __name__ == "__main__":
-    # to hack, run this file directly instead of the fallingsky command
-    pygame.init()
-    play_hack()
+    # to hack, change this next line to play_hack() instead of play()
+    play()

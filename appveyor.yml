@@ -1,0 +1,42 @@
+environment:
+
+  global:
+    WITH_COMPILER: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_compiler.cmd"
+
+  matrix:
+    - PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7.10"
+      PYTHON_ARCH: "32"
+
+init:
+  - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
+
+install:
+  - git submodule update --init
+  - ps: appveyor/install.ps1
+  - ps: Start-FileDownload 'http://pygame.org/ftp/pygame-1.9.2a0.win32-py2.7.msi'
+  - ps: Start-Process -FilePath msiexec -ArgumentList /i, "pygame-1.9.2a0.win32-py2.7.msi", /qb, ADDLOCAL=ALL, ALLUSERS=1 -Wait
+  - ps: Start-FileDownload (("http://downloads.sourceforge.net/project/pywin32/pywin32/Build%20219/pywin32-219.win32-py2.7.exe?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fpywin32%2Ffiles%2Fpywin32%2FBuild%2520219%2F&ts=", $(date +%s), "&use_mirror=iweb") -join "")
+  - ps: Start-Process -FilePath unzip -ArgumentList "-q", "pywin*.exe" -Wait -ErrorAction SilentlyContinue
+  - mv PLATLIB/* %PYTHON%/Lib/site-packages/
+  - mv SCRIPTS/* %PYTHON%/Scripts/
+  - "%WITH_COMPILER% %PYTHON%/python %PYTHON%/Scripts/pywin32_postinstall.py -install"
+
+build: false
+
+test_script:
+  - "%WITH_COMPILER% %PYTHON%/python setup.py test"
+  - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_msi"
+  - "%WITH_COMPILER% %PYTHON%/Scripts/pyinstaller pyinstaller.spec"
+
+artifacts:
+  - path: dist/*
+
+deploy:
+  provider: GitHub
+  auth_token:
+    secure: YcvGMGX0vDs6Tpe+y7De46GQJuDwBh+DthqZfpDr9P/glfLHORQV7vYHfVVFpw+2
+  artifact: dist/*
+  on:
+    branch: master
+    appveyor_repo_tag: true
