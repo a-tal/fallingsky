@@ -1,12 +1,7 @@
 environment:
-
-  global:
-    WITH_COMPILER: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_compiler.cmd"
-
-  matrix:
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.10"
-      PYTHON_ARCH: "32"
+  PYTHON: "C:\\Python27"
+  PYTHON_VERSION: "2.7.10"
+  PYTHON_ARCH: "32"
 
 init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
@@ -20,14 +15,13 @@ install:
   - ps: Start-Process -FilePath unzip -ArgumentList "-q", "pywin*.exe" -Wait -ErrorAction SilentlyContinue
   - mv PLATLIB/* %PYTHON%/Lib/site-packages/
   - mv SCRIPTS/* %PYTHON%/Scripts/
-  - "%WITH_COMPILER% %PYTHON%/python %PYTHON%/Scripts/pywin32_postinstall.py -install"
+  - ps: C:/Python27/python.exe C:/Python27/Scripts/pywin32_postinstall.py -install
 
 build: false
 
 test_script:
-  - "%WITH_COMPILER% %PYTHON%/python setup.py test"
-  - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_msi"
-  - "%WITH_COMPILER% %PYTHON%/Scripts/pyinstaller pyinstaller.spec"
+  - ps: C:/Python27/python.exe setup.py bdist_msi
+  - ps: Start-Process -FilePath C:/Python27/Scripts/pyinstaller.exe -ArgumentList pyinstaller.spec -Wait -ErrorAction SilentlyContinue
 
 artifacts:
   - path: dist/*
