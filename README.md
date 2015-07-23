@@ -16,6 +16,8 @@ The Tragedy of the Falling Sky
 
 A game of falling blocks with RPG elements, uses pygame. In very early development, feel free to help out!
 
+![](https://raw.githubusercontent.com/a-tal/fallingsky/gh-pages/images/menu.png)
+
 ![](https://raw.githubusercontent.com/a-tal/fallingsky/gh-pages/images/demo.gif)
 
 
