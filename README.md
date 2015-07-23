@@ -47,7 +47,13 @@ $ # create and/or activate a virtualenv here (optional)
 $ yes | pip install hg+http://bitbucket.org/pygame/pygame
 ```
 
-On Windows, install the pygame binaries from [pygame.org](http://pygame.org/download.shtml).
+On Windows, if you only want to play Falling Sky and not develop or hack on it,
+there is a pre-built standalone binary .exe file available [for each tagged release](https://github.com/a-tal/fallingsky/releases).
+
+If you want to develop in windows, you'll need Python27 installed somewhere, then
+install the pygame binaries from [pygame.org](http://pygame.org/download.shtml)
+and finally install either the [msi release](https://github.com/a-tal/fallingsky/releases)
+or git clone this repo and install it via setuptools or pip as per usual.
 
 
 Fallingsky
