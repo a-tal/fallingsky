@@ -21,7 +21,7 @@ build: false
 
 test_script:
   - ps: C:/Python27/python.exe setup.py bdist_msi
-  - ps: Start-Process -FilePath C:/Python27/Scripts/pyinstaller.exe -ArgumentList pyinstaller.spec -Wait -ErrorAction SilentlyContinue
+  - ps: ./build_appveyor_exe.ps1
 
 artifacts:
   - path: dist/*
