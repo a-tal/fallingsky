@@ -21,8 +21,8 @@ $spec_file = [string]::join(".", $exe_name, "spec")
             "        a.datas.remove(d)"
             "        break"
         }
-        if ($_ -match "console=True") {
-            "          console=False )"
+        if ($_ -match "debug=False") {
+            "          debug=True,"
         } else {
             $_ # send the current line to output
         }
