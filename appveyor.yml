@@ -20,6 +20,7 @@ install:
 build: false
 
 test_script:
+  - ps: Start-Process -FilePath C:/Python27/python.exe -ArgumentList setup.py, install -Wait -ErrorAction SilentlyContinue
   - ps: C:/Python27/python.exe setup.py bdist_msi
   - ps: ./build_appveyor_exe.ps1
 
