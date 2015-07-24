@@ -6,6 +6,7 @@ The Tragedy of the Falling Sky
 [![Join the chat at https://gitter.im/a-tal/fallingsky](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/a-tal/fallingsky?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Version](https://img.shields.io/pypi/v/fallingsky.svg)](https://pypi.python.org/pypi/fallingsky/)
 [![Build Status](https://img.shields.io/travis/a-tal/fallingsky.svg)](https://travis-ci.org/a-tal/fallingsky)
+[![Appveyor](https://ci.appveyor.com/api/projects/status/bbju91lr43yfsr1n?svg=true)](https://ci.appveyor.com/project/a-tal/fallingsky)
 [![Download format](https://img.shields.io/badge/format-wheel-green.svg?)](https://pypi.python.org/pypi/fallingsky/)
 [![Test Coverage](https://img.shields.io/coveralls/a-tal/fallingsky.svg)](https://coveralls.io/r/a-tal/fallingsky)
 [![Downloads this month](https://img.shields.io/pypi/dm/fallingsky.svg)](https://pypi.python.org/pypi/fallingsky/)
