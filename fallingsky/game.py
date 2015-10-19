@@ -65,10 +65,10 @@ class GameBoard(object):
         else:
             return self.fonts[font].render(text, True, color or white)
 
-    def refresh_background(self, dt, background):
+    def refresh_background(self, dt):
         """Called per clock cycle, updates all graphics."""
 
-        self.screen.blit(background, (0, 0))
+        self.screen.blit(self.background, (0, 0))
 
         # hold area
         hold_font = self.render("Hold")
@@ -156,9 +156,7 @@ class GameBoard(object):
             stats.append(self.render("!", "small"))
 
         stat_bar = pygame.Surface((self.resolution[0], 20))
-        img = load_image("banner.png")
-        banner = pygame.transform.scale(img, (self.resolution[0], 20))
-        stat_bar.blit(banner, (0, 0))
+        stat_bar.blit(self.banner, (0, 0))
         gap = self.resolution[0] // len(stats)
 
         for i, stat in enumerate(stats):
@@ -532,10 +530,15 @@ class GameBoard(object):
         self.resolution = menu.resolution
         self.blocksize = min(menu.data["blocksize"], 12) * 4
 
-        background = load_image("background.png")
-        background = pygame.transform.scale(background, self.resolution)
+        self.background = pygame.transform.scale(
+            load_image("background.png"),
+            self.resolution,
+        )
+        self.banner = pygame.transform.scale(
+            load_image("banner.png"),
+            (self.resolution[0], 20),
+        )
 
-        # board size
         max_width = int(menu.resolution[0] / self.blocksize) - 10
         max_height = int(menu.resolution[1] / self.blocksize) - 3
         self.width = min(menu.data["width"], max_width)
@@ -673,7 +676,7 @@ class GameBoard(object):
                 slam_available = slam_delay
                 swap_available = swap_delay
 
-            self.refresh_background(dt, background)
+            self.refresh_background(dt)
 
 
 class SoundEffects(object):

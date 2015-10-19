@@ -74,7 +74,9 @@ class Shape(object):
 
         self.offset_coords = offset_coords[self.shape_name]
         self.initial_offset = self.offset_coords
-        self.vertical_offset = game.vertical_offset + (game.blocksize * 2)
+        self.vertical_offset = game.vertical_offset + (game.blocksize * (
+            1 + int(self.shape_name != "i")
+        ))
         self.exploding = False
         self.falling = True
         self.fall_rate = max(1100 - (game.fallrate * 50), 65)
